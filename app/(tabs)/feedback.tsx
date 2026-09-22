@@ -115,13 +115,6 @@ const Feedback = () => {
               </View>
             </View>
           )}
-
-          <View className="mt-8 items-center px-6">
-            <Ionicons name="heart-outline" size={22} color={colors.accent} />
-            <Text className="text-muted mt-2 text-center text-[12px] leading-5">
-              የእርስዎ አስተያየት ፍሬ ሀይማኖትን ለማሻሻል ይረዳናል።
-            </Text>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

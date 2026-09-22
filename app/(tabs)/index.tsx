@@ -91,11 +91,11 @@ const Index = () => {
         <View className="mt-7">
           <View className="flex-row items-center justify-between">
             <Text className="text-primary text-[19px] font-black tracking-tight">
-              የቅርብ ጊዜ መዝሙሮች
+              አዳዲስ መዝሙራት
             </Text>
             <Link href="/mezmurs" asChild>
               <TouchableOpacity activeOpacity={0.6} accessibilityRole="button">
-                <Text className="text-accent text-[14px] font-bold">ሁሉንም ይመልከቱ →</Text>
+                <Text className="text-accent text-[14px] font-bold">ሁሉንም ይመልከቱ</Text>
               </TouchableOpacity>
             </Link>
           </View>
