@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { mezmurs, mezmurCategories, type MockMezmur } from '../../../data/mockMezmurs';
+import { colors } from '../../../constants/theme';
 
 const ALL_ID = 0; // sentinel id for the "ሁሉም" (All) filter pill
 
@@ -30,11 +31,18 @@ const Mezmurs = () => {
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListHeaderComponent={
           <View>
-            {/* title */}
-            <Text className="text-primary text-[32px] font-black tracking-tight">መዝሙሮች</Text>
+            <View className="flex-row items-center gap-3">
+              <View className="bg-primary h-12 w-12 items-center justify-center rounded-2xl">
+                <Ionicons name="musical-notes" size={24} color={colors.white} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-primary text-[30px] font-black tracking-tight">መዝሙሮች</Text>
+                <Text className="text-muted mt-1 text-[13px]">በምስጋና እና በደስታ ይዘምሩ</Text>
+              </View>
+            </View>
 
             {/* search */}
-            <View className="border-border mt-5 flex-row items-center gap-2 rounded-2xl border bg-white px-4 py-3">
+            <View className="border-border mt-7 flex-row items-center gap-2 rounded-2xl border bg-white px-4 py-3">
               <Ionicons name="search" size={19} color="#9CA3AF" />
               <TextInput
                 value={query}

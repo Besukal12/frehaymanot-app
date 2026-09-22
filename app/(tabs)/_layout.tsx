@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../constants/theme";
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../constants/theme';
 
 export default function TabsLayout() {
   return (
@@ -15,22 +15,21 @@ export default function TabsLayout() {
           height: 72,
           paddingBottom: 8,
           paddingTop: 5,
-          borderRadius: 5
+          borderRadius: 5,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
-      }}
-    >
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+      }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: 'Home',
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="mezmurs"
         options={{
-          title: "Mezmurs",
+          title: 'መዝሙሮች',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="musical-notes" size={size} color={color} />
           ),
@@ -39,14 +38,14 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="courses"
         options={{
-          title: "Courses",
+          title: 'ኮርሶች',
           tabBarIcon: ({ color, size }) => <Ionicons name="book" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="feedback"
         options={{
-          title: "Feedback",
+          title: 'አስተያየት',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-ellipses" size={size} color={color} />
           ),
