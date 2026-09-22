@@ -112,7 +112,11 @@ const Mezmurs = () => {
               accessibilityLabel={item.title}
               className="border-border flex-row items-center gap-3 rounded-2xl border bg-white p-3">
               <Image
-                source={{ uri: item.thumbnailUrl }}
+                source={
+                  item.category.imageUrl
+                    ? { uri: item.category.imageUrl }
+                    : require('../../../assets/teklehaymanot.jpg')
+                }
                 className="h-16 w-16 rounded-xl bg-gray-100"
                 resizeMode="cover"
               />
