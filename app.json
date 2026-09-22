@@ -3,6 +3,7 @@
     "name": "Fre Haymanot",
     "slug": "fre-haymanot",
     "version": "1.0.0",
+    "scheme": "frehaymanot",
     "web": {
       "favicon": "./assets/favicon.png"
     },
@@ -17,17 +18,13 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      [
-        "expo-router"
-      ],
+      ["expo-router"],
       "expo-status-bar"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
