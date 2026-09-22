@@ -4,10 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { QUICK_ACTIONS, LATEST_MEZMURS } from '../../data/data';
 import { colors } from 'constants/theme';
+import { useApp } from '../../context/AppContext';
 
 const Index = () => {
+  const { theme } = useApp();
+
   return (
-    <SafeAreaView className="bg-background flex-1" style={{ flex: 1 }}>
+    <SafeAreaView
+      className="bg-background flex-1"
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView
         className="flex-1"
         style={{ flex: 1 }}

@@ -4,11 +4,11 @@
 @import 'nativewind/theme';
 
 @theme {
-  --color-primary: #8B1E3F;
-  --color-accent: #C9A227;
-  --color-background: #FAF6F0;
-  --color-ink: #241C15;
-  --color-muted: #9C8F80;
-  --color-white: #FFFFFF;
-  --color-border: #EDE3D6;
+  --color-primary: var(--app-primary, #8b1e3f);
+  --color-accent: var(--app-accent, #c9a227);
+  --color-background: var(--app-background, #faf6f0);
+  --color-ink: var(--app-ink, #241c15);
+  --color-muted: var(--app-muted, #9c8f80);
+  --color-white: var(--app-white, #ffffff);
+  --color-border: var(--app-border, #ede3d6);
 }

@@ -4,12 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { announcements, type MockAnnouncement } from '../../data/mockAnnouncements';
 import { colors } from '../../constants/theme';
+import { useApp } from '../../context/AppContext';
 
 const formatRelativeDate = (isoDate: string) => {
   const posted = new Date(isoDate);
-  const diffDays = Math.floor((Date.now() - posted.getTime()) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const postedDate = new Date(posted.getFullYear(), posted.getMonth(), posted.getDate());
+  const diffDays = Math.round((today.getTime() - postedDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays <= 0) return 'ዛሬ';
+  if (posted.getTime() > now.getTime()) {
+    return posted.toLocaleDateString('am-ET', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  if (diffDays === 0) return 'ዛሬ';
   if (diffDays === 1) return 'ትናንት';
   if (diffDays < 7) return `${diffDays} ቀናት በፊት`;
 
@@ -17,8 +24,12 @@ const formatRelativeDate = (isoDate: string) => {
 };
 
 const Announcements = () => {
+  const { theme } = useApp();
+
   return (
-    <SafeAreaView className="bg-background flex-1">
+    <SafeAreaView
+      className="bg-background flex-1"
+      style={{ backgroundColor: theme.colors.background }}>
       <FlatList
         data={announcements}
         keyExtractor={(item) => String(item.id)}

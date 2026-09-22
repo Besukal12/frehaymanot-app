@@ -5,12 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { mezmurs, mezmurCategories, type MockMezmur } from '../../../data/mockMezmurs';
 import { colors } from '../../../constants/theme';
+import { useApp } from '../../../context/AppContext';
 
 const ALL_ID = 0; // sentinel id for the "ሁሉም" (All) filter pill
 
 const Mezmurs = () => {
   const [query, setQuery] = useState('');
   const [activeCategoryId, setActiveCategoryId] = useState<number>(ALL_ID);
+  const { theme } = useApp();
 
   const filtered = useMemo(() => {
     return mezmurs.filter((m) => {
@@ -21,7 +23,9 @@ const Mezmurs = () => {
   }, [query, activeCategoryId]);
 
   return (
-    <SafeAreaView className="bg-background flex-1">
+    <SafeAreaView
+      className="bg-background flex-1"
+      style={{ backgroundColor: theme.colors.background }}>
       <FlatList
         data={filtered}
         keyExtractor={(item) => String(item.id)}

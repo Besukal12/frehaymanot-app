@@ -7,7 +7,7 @@ import { courses, type MockCourse } from '../../../data/mockCourses';
 import { useApp } from '../../../context/AppContext';
 
 const Courses = () => {
-  const { isDownloaded, toggleDownload } = useApp();
+  const { isDownloaded, toggleDownload, theme } = useApp();
   const [query, setQuery] = useState('');
   const [activeGrade, setActiveGrade] = useState<number | null>(null);
 
@@ -27,7 +27,9 @@ const Courses = () => {
   }, [activeGrade, query]);
 
   return (
-    <SafeAreaView className="bg-background flex-1">
+    <SafeAreaView
+      className="bg-background flex-1"
+      style={{ backgroundColor: theme.colors.background }}>
       <FlatList
         data={filteredCourses}
         keyExtractor={(item) => String(item.id)}
@@ -139,21 +141,33 @@ const Courses = () => {
                     </Text>
                   </View>
                   <TouchableOpacity
-                    activeOpacity={0.75}
-                    onPress={() => toggleDownload(String(item.id))}
+                    activeOpacity={item.pdfUrl ? 0.75 : 1}
+                    onPress={item.pdfUrl ? () => toggleDownload(String(item.id)) : undefined}
+                    disabled={!item.pdfUrl}
                     accessibilityRole="button"
-                    accessibilityLabel={`${downloaded ? 'Remove' : 'Download'} ${item.title}`}
+                    accessibilityLabel={`${item.pdfUrl ? (downloaded ? 'Remove' : 'Download') : 'Unavailable'} ${item.title}`}
+                    accessibilityState={{ disabled: !item.pdfUrl }}
                     className={`flex-row items-center gap-1.5 rounded-full px-4 py-2 ${
-                      downloaded ? 'bg-[#F1E7C2]' : 'bg-primary'
+                      !item.pdfUrl ? 'bg-gray-200' : downloaded ? 'bg-[#F1E7C2]' : 'bg-primary'
                     }`}>
                     <Ionicons
-                      name={downloaded ? 'checkmark' : 'download-outline'}
+                      name={
+                        !item.pdfUrl
+                          ? 'lock-closed-outline'
+                          : downloaded
+                            ? 'checkmark'
+                            : 'download-outline'
+                      }
                       size={16}
-                      color={downloaded ? colors.primary : colors.white}
+                      color={
+                        !item.pdfUrl ? colors.muted : downloaded ? colors.primary : colors.white
+                      }
                     />
                     <Text
-                      className={`text-[12px] font-bold ${downloaded ? 'text-primary' : 'text-white'}`}>
-                      {downloaded ? 'ተቀምጧል' : 'አውርድ'}
+                      className={`text-[12px] font-bold ${
+                        !item.pdfUrl ? 'text-gray-500' : downloaded ? 'text-primary' : 'text-white'
+                      }`}>
+                      {!item.pdfUrl ? 'PDF የለም' : downloaded ? 'ተቀምጧል' : 'አውርድ'}
                     </Text>
                   </TouchableOpacity>
                 </View>

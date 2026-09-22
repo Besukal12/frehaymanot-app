@@ -16,7 +16,7 @@ import { colors } from '../../constants/theme';
 const MAX_MESSAGE_LENGTH = 2000;
 
 const Feedback = () => {
-  const { submitFeedback } = useApp();
+  const { submitFeedback, theme } = useApp();
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -34,7 +34,9 @@ const Feedback = () => {
   }
 
   return (
-    <SafeAreaView className="bg-background flex-1" style={{ flex: 1 }}>
+    <SafeAreaView
+      className="bg-background flex-1"
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <KeyboardAvoidingView
         className="flex-1"
         style={{ flex: 1 }}
@@ -74,7 +76,7 @@ const Feedback = () => {
                 multiline
                 maxLength={MAX_MESSAGE_LENGTH}
                 textAlignVertical="top"
-                accessibilityLabel="Feedback message"
+                accessibilityLabel="የአስተያየት መልዕክት"
                 className="text-ink min-h-[170px] text-[15px] leading-6"
               />
               <View className="mt-2 flex-row items-center justify-between">
@@ -90,7 +92,7 @@ const Feedback = () => {
               onPress={handleSubmit}
               disabled={!canSubmit}
               accessibilityRole="button"
-              accessibilityLabel="Submit feedback"
+              accessibilityLabel="አስተያየት ላክ"
               className={`mt-5 min-h-14 flex-row items-center justify-center gap-2 rounded-2xl ${
                 canSubmit ? 'bg-primary' : 'bg-[#D8C9C0]'
               }`}>
@@ -100,7 +102,10 @@ const Feedback = () => {
           </View>
 
           {submitted && (
-            <View className="mt-4 flex-row items-center gap-3 rounded-2xl border border-[#D8E8D5] bg-[#F1F8EF] p-4">
+            <View
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+              className="mt-4 flex-row items-center gap-3 rounded-2xl border border-[#D8E8D5] bg-[#F1F8EF] p-4">
               <View className="h-9 w-9 items-center justify-center rounded-full bg-[#D8E8D5]">
                 <Ionicons name="checkmark" size={20} color="#477A45" />
               </View>
