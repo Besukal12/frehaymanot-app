@@ -102,7 +102,7 @@ const Index = () => {
                   activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel={mezmur.title}
-                  className="border-border p-3 flex-row items-center gap-3 rounded-2xl border bg-white p-3">
+                  className="border-border p-3 flex-row items-center gap-3 rounded-2xl border bg-white">
                   <Image
                     source={mezmur.image}
                     className="h-18 w-18 rounded-xl"

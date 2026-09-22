@@ -24,6 +24,7 @@ const Mezmurs = () => {
       <FlatList
         data={filtered}
         keyExtractor={(item) => String(item.id)}
+        keyboardShouldPersistTaps="handled"
         contentContainerClassName="px-5 pt-3 pb-8"
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View className="h-3" />}
@@ -56,6 +57,7 @@ const Mezmurs = () => {
             {/* category filter pills */}
             <FlatList
               horizontal
+              keyboardShouldPersistTaps="handled"
               showsHorizontalScrollIndicator={false}
               className="mt-4"
               contentContainerClassName="gap-2"
