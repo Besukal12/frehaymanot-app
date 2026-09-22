@@ -2,3 +2,13 @@
 @import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css';
 @import 'nativewind/theme';
+
+@theme {
+  --color-primary: #8B1E3F;
+  --color-accent: #C9A227;
+  --color-background: #FAF6F0;
+  --color-ink: #241C15;
+  --color-muted: #9C8F80;
+  --color-white: #FFFFFF;
+  --color-border: #EDE3D6;
+}
