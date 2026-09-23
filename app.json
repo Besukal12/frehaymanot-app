@@ -1,7 +1,14 @@
 {
   "expo": {
     "name": "Fre Haymanot",
-    "slug": "fre-haymanot",
+    "expo-status-bar": [
+      "expo-build-properties",
+      {
+        "android": {
+          "minSdkVersion": 24
+        }
+      }
+    ],
     "version": "1.0.0",
     "scheme": "frehaymanot",
     "web": {
@@ -18,9 +25,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      [
-        "expo-router"
-      ],
+      ["expo-router"],
       "expo-status-bar",
       "expo-font",
       "expo-build-properties"
@@ -28,14 +33,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "minSdkVersion": 24,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
