@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { themes } from '../../constants/theme';
 import { useApp } from '../../context/AppContext';
+import { PageHeader } from '../../components/PageHeader';
 
 const Settings = () => {
   const { theme, themeId, setTheme } = useApp();
@@ -12,15 +13,7 @@ const Settings = () => {
       className="bg-background flex-1"
       style={{ backgroundColor: theme.colors.background }}>
       <ScrollView contentContainerClassName="px-5 pt-4 pb-10" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-center gap-3">
-          <View className="bg-primary h-12 w-12 items-center justify-center rounded-2xl">
-            <Ionicons name="settings" size={24} color={theme.colors.white} />
-          </View>
-          <View className="flex-1">
-            <Text className="text-primary text-[30px] font-black tracking-tight">ማስተካከያ</Text>
-            <Text className="text-muted mt-1 text-[13px]">መተግበሪያውን እንደሚፈልጉ ያቀናብሩ</Text>
-          </View>
-        </View>
+        <PageHeader title="ማስተካከያ" subtitle="መተግበሪያውን እንደሚፈልጉ ያቀናብሩ" icon="settings" />
 
         <View className="border-border mt-7 rounded-[26px] border bg-white p-5">
           <View className="flex-row items-center gap-3">

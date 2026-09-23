@@ -1,186 +1,230 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../../../constants/theme';
 import { courses, type MockCourse } from '../../../data/mockCourses';
 import { useApp } from '../../../context/AppContext';
+import { PageHeader } from '../../../components/PageHeader';
+import { SearchField } from '../../../components/SearchField';
+import { EmptyState } from '../../../components/EmptyState';
+
+type CourseView = 'all' | 'grades';
+
+type GradeGroup = {
+  grade: number;
+  items: MockCourse[];
+};
 
 const Courses = () => {
   const { isDownloaded, toggleDownload, theme } = useApp();
+  const { colors } = theme;
   const [query, setQuery] = useState('');
-  const [activeGrade, setActiveGrade] = useState<number | null>(null);
+  const [view, setView] = useState<CourseView>('grades');
+  const [expandedGrades, setExpandedGrades] = useState<number[]>([1]);
 
-  const grades = [...new Set(courses.map((course) => course.grade))].sort();
-  const filteredCourses = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredCourses = useMemo(
+    () =>
+      courses.filter(
+        (course) =>
+          !normalizedQuery ||
+          course.title.toLowerCase().includes(normalizedQuery) ||
+          course.description?.toLowerCase().includes(normalizedQuery)
+      ),
+    [normalizedQuery]
+  );
 
-    return courses.filter((course) => {
-      const matchesGrade = activeGrade === null || course.grade === activeGrade;
-      const matchesQuery =
-        !normalizedQuery ||
-        course.title.toLowerCase().includes(normalizedQuery) ||
-        course.description?.toLowerCase().includes(normalizedQuery);
+  const gradeGroups = useMemo<GradeGroup[]>(() => {
+    const groups = new Map<number, MockCourse[]>();
 
-      return matchesGrade && matchesQuery;
+    filteredCourses.forEach((course) => {
+      const current = groups.get(course.grade) ?? [];
+      groups.set(course.grade, [...current, course]);
     });
-  }, [activeGrade, query]);
+
+    return [...groups.entries()]
+      .sort(([firstGrade], [secondGrade]) => firstGrade - secondGrade)
+      .map(([grade, items]) => ({ grade, items }));
+  }, [filteredCourses]);
+
+  function toggleGrade(grade: number) {
+    setExpandedGrades((current) =>
+      current.includes(grade) ? current.filter((item) => item !== grade) : [...current, grade]
+    );
+  }
+
+  function renderCourse({ item }: { item: MockCourse }) {
+    const downloaded = isDownloaded(String(item.id));
+
+    return (
+      <View
+        className="mb-3 flex-row gap-3 rounded-xl p-2.5"
+        style={{
+          backgroundColor: colors.white,
+          borderWidth: 1,
+          borderColor: colors.border,
+        }}>
+        {item.thumbnailUrl ? (
+          <Image
+            source={{ uri: item.thumbnailUrl }}
+            className="h-[72px] w-[72px] rounded-lg"
+            resizeMode="cover"
+          />
+        ) : (
+          <View
+            className="h-[72px] w-[72px] items-center justify-center rounded-lg"
+            style={{ backgroundColor: colors.background }}>
+            <Ionicons name="book-outline" size={22} color={colors.muted} />
+          </View>
+        )}
+
+        <View className="min-w-0 flex-1 py-0.5">
+          <Text
+            numberOfLines={1}
+            className="text-[15px] font-semibold"
+            style={{ color: colors.ink }}>
+            {item.title}
+          </Text>
+          <Text className="mt-0.5 text-[12px]" style={{ color: colors.muted }}>
+            ደረጃ {item.grade}
+            {item.pdfUrl ? ' · PDF' : ''}
+          </Text>
+          <Text
+            numberOfLines={2}
+            className="mt-1 text-[12px] leading-4"
+            style={{ color: colors.muted }}>
+            {item.description ?? 'የትምህርት መርሃ ግብር ዝርዝር መረጃ።'}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={item.pdfUrl ? 0.75 : 1}
+          onPress={item.pdfUrl ? () => toggleDownload(String(item.id)) : undefined}
+          disabled={!item.pdfUrl}
+          accessibilityRole="button"
+          accessibilityLabel={
+            !item.pdfUrl ? 'PDF የለም' : downloaded ? 'ተቀምጧል' : `${item.title} አውርድ`
+          }
+          accessibilityState={{ disabled: !item.pdfUrl }}
+          className="self-center rounded-full px-3 py-1.5"
+          style={{
+            backgroundColor: !item.pdfUrl
+              ? colors.background
+              : downloaded
+                ? colors.background
+                : colors.primary,
+            borderWidth: 1,
+            borderColor: !item.pdfUrl || downloaded ? colors.border : colors.primary,
+          }}>
+          <Text
+            className="text-[12px] font-semibold"
+            style={{ color: !item.pdfUrl || downloaded ? colors.muted : '#FFFFFF' }}>
+            {!item.pdfUrl ? 'የለም' : downloaded ? 'ተቀምጧል' : 'አውርድ'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  function renderGrade({ item }: { item: GradeGroup }) {
+    const expanded = expandedGrades.includes(item.grade);
+
+    return (
+      <View
+        className="mb-4 overflow-hidden rounded-2xl"
+        style={{ backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border }}>
+        <TouchableOpacity
+          onPress={() => toggleGrade(item.grade)}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          className="flex-row items-center justify-between px-4 py-4">
+          <View className="flex-row items-center gap-3">
+            <View
+              className="h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: colors.background }}>
+              <Ionicons name="book" size={19} color={colors.primary} />
+            </View>
+            <View>
+              <Text className="text-[17px] font-bold" style={{ color: colors.ink }}>
+                ደረጃ {item.grade}
+              </Text>
+              <Text className="mt-0.5 text-[12px]" style={{ color: colors.muted }}>
+                {item.items.length} ኮርሶች
+              </Text>
+            </View>
+          </View>
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={22}
+            color={colors.muted}
+          />
+        </TouchableOpacity>
+
+        {expanded && (
+          <View className="border-t px-3 pt-3" style={{ borderColor: colors.border }}>
+            {item.items.map((course) => (
+              <View key={course.id}>{renderCourse({ item: course })}</View>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  const listData = view === 'all' ? filteredCourses : gradeGroups;
 
   return (
-    <SafeAreaView
-      className="bg-background flex-1"
-      style={{ backgroundColor: theme.colors.background }}>
-      <FlatList
-        data={filteredCourses}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerClassName="px-5 pt-4 pb-8"
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+      <View className="pl-5">
+        <PageHeader title="ኮርሶች" subtitle="በደረጃ የተደራጁ ኮርሶችን ይምረጡ" icon="book" />
+      </View>
+
+      <FlatList<any>
+        data={listData}
+        keyExtractor={(item) => String(view === 'all' ? item.id : item.grade)}
+        renderItem={view === 'all' ? renderCourse : renderGrade}
+        contentContainerClassName="px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View className="h-3" />}
         ListHeaderComponent={
-          <View>
-            <View className="flex-row items-center gap-3">
-              <View className="bg-primary h-12 w-12 items-center justify-center rounded-2xl">
-                <Ionicons name="book" size={24} color={colors.white} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-primary text-[30px] font-black tracking-tight">ኮርሶች</Text>
-                <Text className="text-muted mt-1 text-[13px]">እውቀትን በእምነት ይገንቡ</Text>
-              </View>
-            </View>
+          <View className="mb-3">
+            <SearchField value={query} onChangeText={setQuery} placeholder="ኮርስ ፈልግ..." />
+            <View
+              className="mt-4 flex-row rounded-xl p-1"
+              style={{ backgroundColor: colors.white }}>
+              {(
+                [
+                  ['all', 'ሁሉም ኮርሶች'],
+                  ['grades', 'በደረጃ'],
+                ] as const
+              ).map(([value, label]) => {
+                const selected = view === value;
 
-            <View className="border-border mt-7 flex-row items-center gap-2 rounded-2xl border bg-white px-4 py-3">
-              <Ionicons name="search" size={19} color={colors.muted} />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="ኮርስ ፈልግ..."
-                placeholderTextColor={colors.muted}
-                className="text-primary flex-1 text-[15px]"
-                returnKeyType="search"
-              />
-              {query.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setQuery('')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Clear course search">
-                  <Ionicons name="close-circle" size={18} color={colors.muted} />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <FlatList
-              horizontal
-              data={[null, ...grades]}
-              keyExtractor={(item) => (item === null ? 'all' : String(item))}
-              keyboardShouldPersistTaps="handled"
-              showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-2"
-              className="mt-4"
-              renderItem={({ item }) => {
-                const active = item === activeGrade || (item === null && activeGrade === null);
                 return (
                   <TouchableOpacity
-                    activeOpacity={0.75}
-                    onPress={() => setActiveGrade(item)}
+                    key={value}
+                    onPress={() => setView(value)}
+                    activeOpacity={0.8}
                     accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    className={`items-center justify-center rounded-full px-5 py-2.5 ${
-                      active ? 'bg-accent' : 'bg-gray-100'
-                    }`}>
+                    accessibilityState={{ selected }}
+                    className="flex-1 items-center rounded-lg px-2 py-2.5"
+                    style={{ backgroundColor: selected ? colors.primary : colors.white }}>
                     <Text
-                      className={`text-[14px] font-semibold ${active ? 'text-white' : 'text-gray-600'}`}>
-                      {item === null ? 'ሁሉም' : `ደረጃ ${item}`}
+                      className="text-[13px] font-semibold"
+                      style={{ color: selected ? colors.white : colors.muted }}>
+                      {label}
                     </Text>
                   </TouchableOpacity>
                 );
-              }}
-            />
-
-            <Text className="text-primary mt-6 mb-3 text-[18px] font-black tracking-tight">
-              የሚገኙ ኮርሶች
+              })}
+            </View>
+            <Text className="mt-4 mb-1 text-[13px]" style={{ color: colors.muted }}>
+              {filteredCourses.length} ኮርሶች
             </Text>
           </View>
         }
-        renderItem={({ item }: { item: MockCourse }) => {
-          const downloaded = isDownloaded(String(item.id));
-
-          return (
-            <View className="border-border overflow-hidden rounded-2xl border bg-white">
-              <Image
-                source={
-                  item.thumbnailUrl
-                    ? { uri: item.thumbnailUrl }
-                    : require('../../../assets/teklehaymanot.jpg')
-                }
-                className="h-32 w-full"
-                resizeMode="cover"
-              />
-              <View className="p-4">
-                <View className="flex-row items-start justify-between gap-3">
-                  <View className="flex-1">
-                    <Text className="text-primary text-[17px] font-bold tracking-tight">
-                      {item.title}
-                    </Text>
-                    <Text className="text-accent mt-1 text-[12px] font-bold">ደረጃ {item.grade}</Text>
-                  </View>
-                  <View className="bg-accent/10 h-9 w-9 items-center justify-center rounded-full">
-                    <Ionicons name="book-outline" size={18} color={colors.accent} />
-                  </View>
-                </View>
-
-                <Text numberOfLines={2} className="text-muted mt-2 text-[13px] leading-5">
-                  {item.description ?? 'የትምህርት መርሃ ግብር ዝርዝር መረጃ።'}
-                </Text>
-
-                <View className="mt-4 flex-row items-center justify-between gap-3">
-                  <View className="flex-row items-center gap-1.5">
-                    <Ionicons name="document-text-outline" size={16} color={colors.muted} />
-                    <Text className="text-muted text-[12px]">
-                      {item.pdfUrl ? 'PDF ይገኛል' : 'PDF አልተጫነም'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    activeOpacity={item.pdfUrl ? 0.75 : 1}
-                    onPress={item.pdfUrl ? () => toggleDownload(String(item.id)) : undefined}
-                    disabled={!item.pdfUrl}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.pdfUrl ? (downloaded ? 'Remove' : 'Download') : 'Unavailable'} ${item.title}`}
-                    accessibilityState={{ disabled: !item.pdfUrl }}
-                    className={`flex-row items-center gap-1.5 rounded-full px-4 py-2 ${
-                      !item.pdfUrl ? 'bg-gray-200' : downloaded ? 'bg-[#F1E7C2]' : 'bg-primary'
-                    }`}>
-                    <Ionicons
-                      name={
-                        !item.pdfUrl
-                          ? 'lock-closed-outline'
-                          : downloaded
-                            ? 'checkmark'
-                            : 'download-outline'
-                      }
-                      size={16}
-                      color={
-                        !item.pdfUrl ? colors.muted : downloaded ? colors.primary : colors.white
-                      }
-                    />
-                    <Text
-                      className={`text-[12px] font-bold ${
-                        !item.pdfUrl ? 'text-gray-500' : downloaded ? 'text-primary' : 'text-white'
-                      }`}>
-                      {!item.pdfUrl ? 'PDF የለም' : downloaded ? 'ተቀምጧል' : 'አውርድ'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-        }}
-        ListEmptyComponent={
-          <View className="mt-16 items-center">
-            <Ionicons name="book-outline" size={32} color={colors.muted} />
-            <Text className="text-muted mt-3 text-[14px]">ምንም ኮርስ አልተገኘም</Text>
-          </View>
-        }
+        ListEmptyComponent={<EmptyState icon="book-outline" message="ምንም ኮርስ አልተገኘም" />}
       />
     </SafeAreaView>
   );

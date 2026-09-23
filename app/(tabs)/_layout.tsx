@@ -12,12 +12,12 @@ export default function TabsLayout() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.muted,
         tabBarStyle: {
+          position: 'absolute',
           backgroundColor: theme.colors.background,
           borderTopColor: theme.colors.border,
           height: 72,
           paddingBottom: 8,
           paddingTop: 5,
-
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}>

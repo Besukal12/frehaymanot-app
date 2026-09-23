@@ -16,6 +16,7 @@ const Index = () => {
       <ScrollView
         className="flex-1"
         style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 96 }}
         contentContainerClassName="px-5 pt-3 pb-8"
         showsVerticalScrollIndicator={false}>
         {/* header */}
@@ -90,9 +91,7 @@ const Index = () => {
         {/* latest mezmurs */}
         <View className="mt-7">
           <View className="flex-row items-center justify-between">
-            <Text className="text-primary text-[19px] font-black tracking-tight">
-              አዳዲስ መዝሙራት
-            </Text>
+            <Text className="text-primary text-[19px] font-black tracking-tight">አዳዲስ መዝሙራት</Text>
             <Link href="/mezmurs" asChild>
               <TouchableOpacity activeOpacity={0.6} accessibilityRole="button">
                 <Text className="text-accent text-[14px] font-bold">ሁሉንም ይመልከቱ</Text>
@@ -107,7 +106,7 @@ const Index = () => {
                   activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel={mezmur.title}
-                  className="border-border p-3 flex-row items-center gap-3 rounded-2xl border bg-white">
+                  className="border-border flex-row items-center gap-3 rounded-2xl border bg-white p-3">
                   <Image
                     source={mezmur.image}
                     className="h-18 w-18 rounded-xl"

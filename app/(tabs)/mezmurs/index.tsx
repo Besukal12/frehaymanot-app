@@ -1,143 +1,249 @@
 import { useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, FlatList } from 'react-native';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { mezmurs, mezmurCategories, type MockMezmur } from '../../../data/mockMezmurs';
-import { colors } from '../../../constants/theme';
-import { useApp } from '../../../context/AppContext';
 
-const ALL_ID = 0; // sentinel id for the "ሁሉም" (All) filter pill
+import { mezmurCategories, mezmurs, type MockMezmurCategory } from '../../../data/mockMezmurs';
+
+import { useApp } from '../../../context/AppContext';
+import { PageHeader } from '../../../components/PageHeader';
+import { SearchField } from '../../../components/SearchField';
+import { EmptyState } from '../../../components/EmptyState';
+
+type CategoryWithItems = MockMezmurCategory & {
+  items: typeof mezmurs;
+};
+
+type MezmurView = 'all' | 'categories';
 
 const Mezmurs = () => {
-  const [query, setQuery] = useState('');
-  const [activeCategoryId, setActiveCategoryId] = useState<number>(ALL_ID);
   const { theme } = useApp();
 
-  const filtered = useMemo(() => {
-    return mezmurs.filter((m) => {
-      const matchesCategory = activeCategoryId === ALL_ID || m.categoryId === activeCategoryId;
-      const matchesQuery = m.title.toLowerCase().includes(query.trim().toLowerCase());
-      return matchesCategory && matchesQuery;
-    });
-  }, [query, activeCategoryId]);
+  const [query, setQuery] = useState('');
+  const [view, setView] = useState<MezmurView>('categories');
+  const [expandedIds, setExpandedIds] = useState<number[]>([1]);
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const categories = useMemo<CategoryWithItems[]>(() => {
+    return mezmurCategories
+      .map((category) => {
+        const items = mezmurs.filter(
+          (mezmur) =>
+            mezmur.categoryId === category.id &&
+            (!normalizedQuery ||
+              mezmur.title.toLowerCase().includes(normalizedQuery) ||
+              mezmur.description?.toLowerCase().includes(normalizedQuery))
+        );
+
+        return {
+          ...category,
+          items,
+        };
+      })
+      .filter((category) => category.items.length > 0);
+  }, [normalizedQuery]);
+
+  const filteredMezmurs = useMemo(
+    () =>
+      mezmurs.filter(
+        (mezmur) =>
+          !normalizedQuery ||
+          mezmur.title.toLowerCase().includes(normalizedQuery) ||
+          mezmur.description?.toLowerCase().includes(normalizedQuery)
+      ),
+    [normalizedQuery]
+  );
+
+  const toggleCategory = (categoryId: number) => {
+    setExpandedIds((current) =>
+      current.includes(categoryId)
+        ? current.filter((id) => id !== categoryId)
+        : [...current, categoryId]
+    );
+  };
+
+  const renderCategory = ({ item }: { item: CategoryWithItems }) => {
+    const expanded = expandedIds.includes(item.id);
+
+    return (
+      <View
+        className="mb-4 overflow-hidden rounded-2xl"
+        style={{
+          backgroundColor: theme.colors.white,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+        }}>
+        {/* CATEGORY HEADER */}
+        <TouchableOpacity
+          onPress={() => toggleCategory(item.id)}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          className="flex-row items-center justify-between px-4 py-4">
+          <View className="flex-row items-center gap-3">
+            <View
+              className="h-10 w-10 items-center justify-center rounded-xl"
+              style={{
+                backgroundColor: theme.colors.background,
+              }}>
+              <Ionicons name="musical-notes" size={19} color={theme.colors.primary} />
+            </View>
+
+            <View>
+              <Text className="text-[17px] font-bold" style={{ color: theme.colors.ink }}>
+                {item.name}
+              </Text>
+
+              <Text className="mt-0.5 text-[12px]" style={{ color: theme.colors.muted }}>
+                {item.items.length} መዝሙሮች
+              </Text>
+            </View>
+          </View>
+
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={22}
+            color={theme.colors.muted}
+          />
+        </TouchableOpacity>
+
+        {/* CATEGORY CONTENT */}
+        {expanded && (
+          <View
+            className="border-t px-3 pt-3 pb-2"
+            style={{
+              borderColor: theme.colors.border,
+            }}>
+            <View className="flex-row flex-wrap justify-between">
+              {item.items.map((mezmur) => (
+                <Link key={mezmur.id} href={`/mezmurs/${mezmur.id}`} asChild>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel={mezmur.title}
+                    className="mb-4 w-[48%]">
+                    <Image
+                      source={
+                        item.imageUrl
+                          ? { uri: item.imageUrl }
+                          : require('../../../assets/teklehaymanot.jpg')
+                      }
+                      className="aspect-[1.55] w-full rounded-xl"
+                      resizeMode="cover"
+                    />
+
+                    <Text
+                      numberOfLines={2}
+                      className="mt-2 text-center text-[14px] font-semibold"
+                      style={{
+                        color: theme.colors.ink,
+                      }}>
+                      {mezmur.title}
+                    </Text>
+                  </TouchableOpacity>
+                </Link>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderMezmur = ({ item }: { item: (typeof mezmurs)[number] }) => (
+    <Link href={`/mezmurs/${item.id}`} asChild>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={item.title}
+        className="mb-3 flex-row items-center gap-3 rounded-2xl border p-3"
+        style={{
+          backgroundColor: theme.colors.white,
+          borderColor: theme.colors.border,
+        }}>
+        <Image
+          source={
+            item.category.imageUrl
+              ? { uri: item.category.imageUrl }
+              : require('../../../assets/teklehaymanot.jpg')
+          }
+          className="h-16 w-16 rounded-xl"
+          resizeMode="cover"
+        />
+        <View className="flex-1">
+          <Text className="text-[16px] font-bold" style={{ color: theme.colors.ink }}>
+            {item.title}
+          </Text>
+          <Text className="mt-1 text-[13px]" style={{ color: theme.colors.muted }}>
+            {item.category.name}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
+      </TouchableOpacity>
+    </Link>
+  );
 
   return (
     <SafeAreaView
-      className="bg-background flex-1"
-      style={{ backgroundColor: theme.colors.background }}>
-      <FlatList
-        data={filtered}
+      className="flex-1"
+      style={{
+        backgroundColor: theme.colors.background,
+      }}>
+      <FlatList<any>
+        data={view === 'all' ? filteredMezmurs : categories}
         keyExtractor={(item) => String(item.id)}
-        keyboardShouldPersistTaps="handled"
-        contentContainerClassName="px-5 pt-3 pb-8"
+        renderItem={view === 'all' ? renderMezmur : renderCategory}
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View className="h-3" />}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 32,
+        }}
         ListHeaderComponent={
           <View>
-            <View className="flex-row items-center gap-3">
-              <View className="bg-primary h-12 w-12 items-center justify-center rounded-2xl">
-                <Ionicons name="musical-notes" size={24} color={colors.white} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-primary text-[30px] font-black tracking-tight">መዝሙሮች</Text>
-                <Text className="text-muted mt-1 text-[13px]">በምስጋና እና በደስታ ይዘምሩ</Text>
-              </View>
-            </View>
+            <PageHeader title="መዝሙሮች" subtitle="በምድብ የተደራጁ መዝሙሮችን ይምረጡ" icon="musical-notes" />
 
-            {/* search */}
-            <View className="border-border mt-7 flex-row items-center gap-2 rounded-2xl border bg-white px-4 py-3">
-              <Ionicons name="search" size={19} color="#9CA3AF" />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="መዝሙር ፈልግ..."
-                placeholderTextColor="#9CA3AF"
-                className="text-primary flex-1 text-[15px]"
-                returnKeyType="search"
-              />
-              {query.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setQuery('')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Clear search">
-                  <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-                </TouchableOpacity>
-              )}
-            </View>
+            {/* SEARCH */}
+            <SearchField value={query} onChangeText={setQuery} placeholder="መዝሙር ፈልግ..." />
 
-            {/* category filter pills */}
-            <FlatList
-              horizontal
-              keyboardShouldPersistTaps="handled"
-              showsHorizontalScrollIndicator={false}
-              className="mt-4"
-              contentContainerClassName="gap-2"
-              data={[{ id: ALL_ID, name: 'ሁሉም' }, ...mezmurCategories]}
-              keyExtractor={(item) => String(item.id)}
-              renderItem={({ item }) => {
-                const active = item.id === activeCategoryId;
+            <View
+              className="mt-4 flex-row rounded-xl p-1"
+              style={{ backgroundColor: theme.colors.white }}>
+              {(
+                [
+                  ['all', 'ሁሉም መዝሙሮች'],
+                  ['categories', 'ምድቦች'],
+                ] as const
+              ).map(([value, label]) => {
+                const selected = view === value;
+
                 return (
                   <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setActiveCategoryId(item.id)}
+                    key={value}
+                    onPress={() => setView(value)}
+                    activeOpacity={0.8}
                     accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    className={
-                      active
-                        ? 'bg-accent items-center justify-center rounded-full px-5 py-2.5'
-                        : 'items-center justify-center rounded-full bg-gray-100 px-5 py-2.5'
-                    }>
+                    accessibilityState={{ selected }}
+                    className="flex-1 items-center rounded-lg px-2 py-2.5"
+                    style={{
+                      backgroundColor: selected ? theme.colors.primary : theme.colors.white,
+                    }}>
                     <Text
-                      className={
-                        active
-                          ? 'text-[14px] font-bold text-white'
-                          : 'text-[14px] font-semibold text-gray-600'
-                      }>
-                      {item.name}
+                      className="text-[13px] font-semibold"
+                      style={{ color: selected ? theme.colors.white : theme.colors.muted }}>
+                      {label}
                     </Text>
                   </TouchableOpacity>
                 );
-              }}
-            />
+              })}
+            </View>
 
-            <View className="mt-5" />
+            <View className="h-5" />
           </View>
         }
-        renderItem={({ item }: { item: MockMezmur }) => (
-          <Link href={`/mezmurs/${item.id}`} asChild>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={item.title}
-              className="border-border flex-row items-center gap-3 rounded-2xl border bg-white p-3">
-              <Image
-                source={
-                  item.category.imageUrl
-                    ? { uri: item.category.imageUrl }
-                    : require('../../../assets/teklehaymanot.jpg')
-                }
-                className="h-16 w-16 rounded-xl bg-gray-100"
-                resizeMode="cover"
-              />
-              <View className="flex-1">
-                <Text
-                  numberOfLines={1}
-                  className="text-primary text-[16px] font-bold tracking-tight">
-                  {item.title}
-                </Text>
-                <Text className="mt-1 text-[13px] text-gray-500">{item.category.name}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-          </Link>
-        )}
-        ListEmptyComponent={
-          <View className="mt-16 items-center">
-            <Ionicons name="musical-notes-outline" size={32} color="#9CA3AF" />
-            <Text className="mt-3 text-[14px] text-gray-500">ምንም መዝሙር አልተገኘም</Text>
-          </View>
-        }
+        ListEmptyComponent={<EmptyState icon="musical-notes-outline" message="ምንም መዝሙር አልተገኘም" />}
       />
     </SafeAreaView>
   );

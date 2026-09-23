@@ -1,12 +1,14 @@
-import '../global.css'; // must be imported once, at the very top of the app
+import '../global.css'; 
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider } from '../context/AppContext';
 
 export default function RootLayout() {
   return (
-    <AppProvider>
-      <Stack screenOptions={{ headerShown: false }} />
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { flex: 1 } }} />
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }

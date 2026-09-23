@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../context/AppContext';
 import { colors } from '../../constants/theme';
+import { PageHeader } from '../../components/PageHeader';
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -46,15 +47,7 @@ const Feedback = () => {
           contentContainerClassName="px-5 pt-4 pb-10"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <View className="flex-row items-center gap-3">
-            <View className="bg-primary h-12 w-12 items-center justify-center rounded-2xl">
-              <Ionicons name="chatbubble-ellipses" size={24} color={colors.white} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-primary text-[30px] font-black tracking-tight">አስተያየት</Text>
-              <Text className="text-muted mt-1 text-[13px]">ሐሳብዎን ከእኛ ጋር ያካፍሉ</Text>
-            </View>
-          </View>
+          <PageHeader title="አስተያየት" subtitle="ሐሳብዎን ከእኛ ጋር ያካፍሉ" icon="chatbubble-ellipses" />
 
           <View className="border-border mt-7 rounded-[26px] border bg-white p-5">
             <Text className="text-primary text-[20px] font-black tracking-tight">

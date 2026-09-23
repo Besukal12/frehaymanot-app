@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { announcements, type MockAnnouncement } from '../../data/mockAnnouncements';
 import { colors } from '../../constants/theme';
 import { useApp } from '../../context/AppContext';
+import { PageHeader } from '../../components/PageHeader';
 
 const formatRelativeDate = (isoDate: string) => {
   const posted = new Date(isoDate);
@@ -37,15 +38,7 @@ const Announcements = () => {
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListHeaderComponent={
-          <View className="mb-5 flex-row items-center gap-3">
-            <View className="bg-primary h-12 w-12 items-center justify-center rounded-2xl">
-              <Ionicons name="megaphone" size={24} color={colors.white} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-primary text-[30px] font-black tracking-tight">ማስታወቂያዎች</Text>
-              <Text className="text-muted mt-1 text-[13px]">አዳዲስ ዜናዎችን እና መረጃዎችን ይከታተሉ</Text>
-            </View>
-          </View>
+          <PageHeader title="ማስታወቂያዎች" subtitle="አዳዲስ ዜናዎችን እና መረጃዎችን ይከታተሉ" icon="megaphone" />
         }
         renderItem={({ item }: { item: MockAnnouncement }) => (
           <Link href={`/announcements/${item.slug}`} asChild>
