@@ -29,7 +29,8 @@ export const mezmurs: MockMezmur[] = [
     title: 'የህይወት ብርሃን',
     description: 'በእግዚአብሔር ብርሃን ስለምንመላለስ የሚያስታውስ የምስጋና መዝሙር።',
     categoryId: 1,
-    mezmurPoem: 'የህይወት ብርሃን አንተ ነህ፣\nመንገዴን አብራልኝ።\nበምስጋና እዘምራለሁ፣\nስምህን አከብራለሁ።',
+    mezmurPoem:
+      'የህይወት ብርሃን አንተ ነህ፣\n    መንገዴን አብራልኝ።\n    በምስጋና እዘምራለሁ፣\n    ስምህን አከብራለሁ።\n\n    በጸጋህ እቆማለሁ፣\n    በፍቅርህ እኖራለሁ።',
     createdAt: '2026-09-20T08:00:00.000Z',
     updatedAt: '2026-09-20T08:00:00.000Z',
     category: mezmurCategories[0],
@@ -39,7 +40,8 @@ export const mezmurs: MockMezmur[] = [
     title: 'ጸጋህ ይበቃኛል',
     description: 'በፈተና ጊዜ በጌታ ጸጋ እንድንታመን የሚጠራ መዝሙር።',
     categoryId: 3,
-    mezmurPoem: 'ጸጋህ ይበቃኛል፣ ጌታዬ፣\nበድካሜ ኃይል ትሆነኛለህ።\nበአንተ እታመናለሁ፣\nበፍቅርህ እኖራለሁ።',
+    mezmurPoem:
+      'ጸጋህ ይበቃኛል፣ ጌታዬ፣\n    በድካሜ ኃይል ትሆነኛለህ።\n    በአንተ እታመናለሁ፣\n    በፍቅርህ እኖራለሁ።\n\n    በምሕረትህ እታደሳለሁ፣\n    በቃልህ እጸናለሁ።',
     createdAt: '2026-09-19T10:30:00.000Z',
     updatedAt: '2026-09-19T10:30:00.000Z',
     category: mezmurCategories[2],
@@ -49,7 +51,8 @@ export const mezmurs: MockMezmur[] = [
     title: 'ምስጋና ለልዑል',
     description: 'ለልዑል እግዚአብሔር የምስጋና እና የውዳሴ መዝሙር።',
     categoryId: 1,
-    mezmurPoem: 'ምስጋና ለልዑል፣ ክብር ለንጉሥ፣\nምሕረቱ ለዘላለም ነው።\nልባችን በደስታ ይዘምር፣\nስሙን ሁልጊዜ እናክብር።',
+    mezmurPoem:
+      'ምስጋና ለልዑል፣ ክብር ለንጉሥ፣\n    ምሕረቱ ለዘላለም ነው።\n    ልባችን በደስታ ይዘምር፣\n    ስሙን ሁልጊዜ እናክብር።\n\n    በቤቱ ደስታ ይሙላ፣\n    በምስጋና ድምፃችን ይሰማ።',
     createdAt: '2026-09-18T14:15:00.000Z',
     updatedAt: '2026-09-18T14:15:00.000Z',
     category: mezmurCategories[0],
@@ -59,7 +62,8 @@ export const mezmurs: MockMezmur[] = [
     title: 'በጸሎት እንቅረብ',
     description: 'በጸሎት ወደ እግዚአብሔር እንድንቀርብ የሚያበረታታ መዝሙር።',
     categoryId: 2,
-    mezmurPoem: 'በጸሎት እንቅረብ፣ በእምነት እንጸና፣\nየልባችንን ቃል እንናገር።\nእርሱ ይሰማናል፣ ይመራናል፣\nበሰላሙም ያሳርፈናል።',
+    mezmurPoem:
+      'በጸሎት እንቅረብ፣ በእምነት እንጸና፣\n    የልባችንን ቃል እንናገር።\n    እርሱ ይሰማናል፣ ይመራናል፣\n    በሰላሙም ያሳርፈናል።\n\n    በጨለማ መካከል፣\n    ብርሃኑ ይመራናል።',
     createdAt: '2026-09-17T09:45:00.000Z',
     updatedAt: '2026-09-17T09:45:00.000Z',
     category: mezmurCategories[1],
