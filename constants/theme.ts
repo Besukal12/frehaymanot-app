@@ -1,9 +1,8 @@
-export type ThemeId = 'heritage' | 'forest' | 'ocean' | 'midnight';
+export type ThemeId = 'default' | 'green' | 'blue' | 'dark';
 
 export interface AppTheme {
   id: ThemeId;
   name: string;
-  description: string;
   colors: {
     primary: string;
     accent: string;
@@ -17,9 +16,8 @@ export interface AppTheme {
 
 export const themes: AppTheme[] = [
   {
-    id: 'heritage',
-    name: 'ባህላዊ',
-    description: 'የአሁኑ የፍሬ ሀይማኖት ቀለም',
+    id: 'default',
+    name: 'መደበኛ',
     colors: {
       primary: '#8B1E3F',
       accent: '#C9A227',
@@ -31,9 +29,8 @@ export const themes: AppTheme[] = [
     },
   },
   {
-    id: 'forest',
-    name: 'የደን አረንጓዴ',
-    description: 'ረጋ ያለ እና ተፈጥሯዊ',
+    id: 'green',
+    name: 'አረንጓዴ',
     colors: {
       primary: '#245C4A',
       accent: '#B58B32',
@@ -45,9 +42,8 @@ export const themes: AppTheme[] = [
     },
   },
   {
-    id: 'ocean',
-    name: 'የባሕር ሰማያዊ',
-    description: 'ንጹህ እና ሰላማዊ',
+    id: 'blue',
+    name: 'ሰማያዊ',
     colors: {
       primary: '#175A78',
       accent: '#D28B36',
@@ -59,9 +55,8 @@ export const themes: AppTheme[] = [
     },
   },
   {
-    id: 'midnight',
-    name: 'የሌሊት ሰማይ',
-    description: 'ጥልቅ፣ ረጋ ያለ እና ዘመናዊ',
+    id: 'dark',
+    name: 'ጥቁር',
     colors: {
       primary: '#D8A7C8',
       accent: '#E5B957',

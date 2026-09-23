@@ -21,7 +21,7 @@ const AppContext = createContext<AppContextValue | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [downloadedCourseIds, setDownloadedCourseIds] = useState<string[]>([]);
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
-  const [themeId, setThemeId] = useState<ThemeId>('heritage');
+  const [themeId, setThemeId] = useState<ThemeId>('default');
   const theme = themes.find((item) => item.id === themeId) ?? themes[0];
 
   function toggleDownload(courseId: string) {

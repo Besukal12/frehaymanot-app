@@ -69,7 +69,7 @@ const Mezmurs = () => {
 
     return (
       <View
-        className="mb-4 overflow-hidden rounded-2xl"
+        className="b-20 mb-4 overflow-hidden rounded-2xl"
         style={{
           backgroundColor: theme.colors.white,
           borderWidth: 1,
@@ -125,11 +125,7 @@ const Mezmurs = () => {
                     accessibilityLabel={mezmur.title}
                     className="mb-4 w-[48%]">
                     <Image
-                      source={
-                        item.imageUrl
-                          ? { uri: item.imageUrl }
-                          : require('../../../assets/teklehaymanot.jpg')
-                      }
+                      source={item.imageUrl}
                       className="aspect-[1.55] w-full rounded-xl"
                       resizeMode="cover"
                     />
@@ -164,11 +160,7 @@ const Mezmurs = () => {
           borderColor: theme.colors.border,
         }}>
         <Image
-          source={
-            item.category.imageUrl
-              ? { uri: item.category.imageUrl }
-              : require('../../../assets/teklehaymanot.jpg')
-          }
+          source={item.category.imageUrl}
           className="h-16 w-16 rounded-xl"
           resizeMode="cover"
         />
@@ -199,7 +191,7 @@ const Mezmurs = () => {
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 12,
-          paddingBottom: 32,
+          paddingBottom: 72,
         }}
         ListHeaderComponent={
           <View>

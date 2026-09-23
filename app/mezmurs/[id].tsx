@@ -59,7 +59,7 @@ const MezmurPreview = () => {
         style={{
           backgroundColor: theme.colors.background,
         }}>
-        <StatusBar style={theme.id === 'midnight' ? 'light' : 'dark'} />
+        <StatusBar style={theme.id === 'dark' ? 'light' : 'dark'} />
 
         <Text
           className="text-[16px] font-semibold"
@@ -87,9 +87,7 @@ const MezmurPreview = () => {
     );
   }
 
-  const backgroundImage = mezmur.category.imageUrl
-    ? { uri: mezmur.category.imageUrl }
-    : require('../../assets/teklehaymanot.jpg');
+  const backgroundImage = mezmur.category.imageUrl;
 
   const fadeStart = SCREEN_HEIGHT * 0.18;
   const darkTheme = isDarkColor(theme.colors.primary);
@@ -134,7 +132,7 @@ const MezmurPreview = () => {
           }}
         />
 
-        <SafeAreaView className="flex-1">
+        <SafeAreaView className="flex-1" style={{ flex: 1 }}>
           <View className="flex-row items-center justify-between px-4 pt-1">
             {/* BACK */}
             <TouchableOpacity

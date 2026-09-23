@@ -10,7 +10,7 @@ const Settings = () => {
 
   return (
     <SafeAreaView
-      className="bg-background flex-1"
+      className="bg-background flex-1 h-screen"
       style={{ backgroundColor: theme.colors.background }}>
       <ScrollView contentContainerClassName="px-5 pt-4 pb-10" showsVerticalScrollIndicator={false}>
         <PageHeader title="ማስተካከያ" subtitle="መተግበሪያውን እንደሚፈልጉ ያቀናብሩ" icon="settings" />
@@ -50,7 +50,6 @@ const Settings = () => {
                   </View>
                   <View className="flex-1">
                     <Text className="text-primary text-[15px] font-bold">{item.name}</Text>
-                    <Text className="text-muted mt-1 text-[12px]">{item.description}</Text>
                   </View>
                   <View
                     className="h-6 w-6 items-center justify-center rounded-full border-2"
