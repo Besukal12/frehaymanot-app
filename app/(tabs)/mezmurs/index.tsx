@@ -123,11 +123,13 @@ const Mezmurs = () => {
                     activeOpacity={0.8}
                     accessibilityRole="button"
                     accessibilityLabel={mezmur.title}
-                    className="mb-4 w-[48%]">
+                    className="mb-4"
+                    style={{ width: '48%' }}>
                     <Image
                       source={item.imageUrl}
-                      className="aspect-[1.55] w-full rounded-xl"
+                      className="w-full rounded-xl h-40"
                       resizeMode="cover"
+                      // style={{ aspectRatio: 1.55 }}
                     />
 
                     <Text
