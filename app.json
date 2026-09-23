@@ -1,14 +1,6 @@
 {
   "expo": {
     "name": "Fre Haymanot",
-    "expo-status-bar": [
-      "expo-build-properties",
-      {
-        "android": {
-          "minSdkVersion": 24
-        }
-      }
-    ],
     "version": "1.0.0",
     "scheme": "frehaymanot",
     "web": {
@@ -28,10 +20,17 @@
       ["expo-router"],
       "expo-status-bar",
       "expo-font",
-      "expo-build-properties"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24
+          }
+        }
+      ]
     ],
     "orientation": "portrait",
-    "icon": "./assets/icon.jpg",
+    "icon": "./assets/adaptive-icon.png",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": ["**/*"],
     "ios": {
