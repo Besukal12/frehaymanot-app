@@ -3,7 +3,6 @@ import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { announcements, type MockAnnouncement } from '../../data/mockAnnouncements';
-import { colors } from '../../constants/theme';
 import { useApp } from '../../context/AppContext';
 import { PageHeader } from '../../components/PageHeader';
 
