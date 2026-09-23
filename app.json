@@ -21,7 +21,9 @@
       [
         "expo-router"
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-font",
+      "expo-build-properties"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.jpg",
