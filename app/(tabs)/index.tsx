@@ -108,7 +108,7 @@ const Index = () => {
                   accessibilityLabel={mezmur.title}
                   className="border-border flex-row items-center gap-3 rounded-2xl border bg-white p-3">
                   <Image
-                    source={mezmur.image}
+                    source={mezmur.category.imageUrl}
                     className="h-18 w-18 rounded-xl"
                     resizeMode="cover"
                   />
@@ -118,7 +118,7 @@ const Index = () => {
                       className="text-primary text-[15px] font-bold tracking-tight">
                       {mezmur.title}
                     </Text>
-                    <Text className="mt-1 text-[13px] text-gray-500">{mezmur.subtitle}</Text>
+                    <Text className="mt-1 text-[13px] text-gray-500">{mezmur.category.name}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                 </TouchableOpacity>

@@ -127,7 +127,7 @@ const Mezmurs = () => {
                     style={{ width: '48%' }}>
                     <Image
                       source={item.imageUrl}
-                      className="w-full rounded-xl h-40"
+                      className="h-35 w-full rounded-xl"
                       resizeMode="cover"
                       // style={{ aspectRatio: 1.55 }}
                     />
@@ -181,10 +181,8 @@ const Mezmurs = () => {
 
   return (
     <SafeAreaView
-      className="flex-1"
-      style={{
-        backgroundColor: theme.colors.background,
-      }}>
+      className="bg-background flex-1"
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <FlatList<any>
         data={view === 'all' ? filteredMezmurs : categories}
         keyExtractor={(item) => String(item.id)}

@@ -175,7 +175,9 @@ const Courses = () => {
   const listData = view === 'all' ? filteredCourses : gradeGroups;
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView
+      className="bg-background flex-1"
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <View className="pl-5">
         <PageHeader title="ኮርሶች" subtitle="በደረጃ የተደራጁ ኮርሶችን ይምረጡ" icon="book" />
       </View>

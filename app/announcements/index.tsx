@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { announcements, type MockAnnouncement } from '../../data/mockAnnouncements';
@@ -29,7 +29,15 @@ const Announcements = () => {
   return (
     <SafeAreaView
       className="bg-background flex-1"
-      style={{ backgroundColor: theme.colors.background }}>
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="ወደ ማስታወቂያዎች ተመለስ"
+        className="mb-5 ml-5 h-10 w-10 items-center justify-center rounded-full bg-white">
+        <Ionicons name="arrow-back" size={20} color={theme.colors.primary} />
+      </TouchableOpacity>
       <FlatList
         data={announcements}
         keyExtractor={(item) => String(item.id)}

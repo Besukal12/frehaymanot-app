@@ -10,8 +10,8 @@ const Settings = () => {
 
   return (
     <SafeAreaView
-      className="bg-background flex-1 h-screen"
-      style={{ backgroundColor: theme.colors.background }}>
+      className="bg-background flex-1"
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView contentContainerClassName="px-5 pt-4 pb-10" showsVerticalScrollIndicator={false}>
         <PageHeader title="ማስተካከያ" subtitle="መተግበሪያውን እንደሚፈልጉ ያቀናብሩ" icon="settings" />
 
