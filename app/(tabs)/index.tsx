@@ -59,7 +59,9 @@ const Index = () => {
               </View>
             </View>
             <View className="gap-3 bg-black/65 px-5 pt-7 pb-5">
-              <Text className="text-[20px] leading-[1.25] font-black tracking-tight text-white">
+              <Text
+                className="text-[20px] leading-[1.25] font-black tracking-tight"
+                style={{ color: theme.colors.accent }}>
                 “ሰንሰለታቸውን እንበጥስ፣ የእግር ብረታቸውንም አውልቀን እንጣል”
               </Text>
               <View className="flex-row items-center gap-2">
