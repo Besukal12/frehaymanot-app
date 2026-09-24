@@ -13,7 +13,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/እመቤታችን.jpg",
+          "image": "./assets/splash-screen.png",
           "backgroundColor": "#ffffff"
         }
       ],
