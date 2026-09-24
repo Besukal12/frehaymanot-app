@@ -32,9 +32,8 @@ const Announcements = () => {
       style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <TouchableOpacity
         activeOpacity={0.7}
-        onPress={() => router.back()}
-        accessibilityRole="button"
-        accessibilityLabel="ወደ ማስታወቂያዎች ተመለስ"
+        onPress={() => router.replace('/(tabs)')}
+        accessibilityLabel="ወደ መነሻ ተመለስ"
         className="mb-5 ml-5 h-10 w-10 items-center justify-center rounded-full bg-white">
         <Ionicons name="arrow-back" size={20} color={theme.colors.primary} />
       </TouchableOpacity>

@@ -1,8 +1,8 @@
-import { Image, ScrollView, Text, TouchableOpacity, View, FlatList } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { announcements, type MockAnnouncement } from '../../data/mockAnnouncements';
+import { announcements } from '../../data/mockAnnouncements';
 import { colors } from '../../constants/theme';
 import { useApp } from '../../context/AppContext';
 
@@ -104,77 +104,73 @@ const AnnouncementDetail = () => {
         <View className="bg-accent mt-5 h-1 w-10 rounded-full" />
         <Text className="text-ink mt-6 text-[16px] leading-7">{announcement.content}</Text>
 
-        <FlatList
-          data={latestAnnouncements}
-          keyExtractor={(item) => String(item.id)}
-          showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          ListHeaderComponent={
-            <View className="mt-9 mb-5">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-primary text-[19px] font-black tracking-tight">
-                  አዳዲስ ማስታወቂያዎች
-                </Text>
-                <Link href="/announcements" asChild>
-                  <TouchableOpacity activeOpacity={0.6} accessibilityRole="button">
-                    <Text className="text-accent text-[14px] font-bold">ሁሉንም ይመልከቱ</Text>
-                  </TouchableOpacity>
-                </Link>
-              </View>
-            </View>
-          }
-          renderItem={({ item }: { item: MockAnnouncement }) => (
-            <Link href={`/announcements/${item.slug}`} asChild>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={item.title}
-                className="border-border flex-row items-start gap-3 rounded-2xl border bg-white p-3">
-                {item.thumbnailUrl ? (
-                  <Image
-                    source={{ uri: item.thumbnailUrl }}
-                    className="h-16 w-16 rounded-xl bg-gray-100"
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View className="bg-accent/10 h-16 w-16 items-center justify-center rounded-xl">
-                    <Ionicons name="megaphone" size={24} color="#1F2937" />
-                  </View>
-                )}
-
-                <View className="flex-1">
-                  <Text
-                    numberOfLines={1}
-                    className="text-primary text-[16px] font-bold tracking-tight">
-                    {item.title}
-                  </Text>
-                  <Text numberOfLines={2} className="mt-1 text-[13px] leading-[1.4] text-gray-500">
-                    {item.content}
-                  </Text>
-                  <View className="mt-2 flex-row items-center gap-1">
-                    <Ionicons name="time-outline" size={13} color="#9CA3AF" />
-                    <Text className="text-[12px] text-gray-400">
-                      {formatRelativeDate(item.postedAt)}
-                    </Text>
-                  </View>
-                </View>
-
-                <Ionicons
-                  name="chevron-forward"
-                  size={20}
-                  color="#9CA3AF"
-                  style={{ marginTop: 4 }}
-                />
+        <View className="mt-9">
+          <View className="mb-5 flex-row items-center justify-between">
+            <Text className="text-primary text-[19px] font-black tracking-tight">
+              አዳዲስ ማስታወቂያዎች
+            </Text>
+            <Link href="/announcements" asChild>
+              <TouchableOpacity activeOpacity={0.6} accessibilityRole="button">
+                <Text className="text-accent text-[14px] font-bold">ሁሉንም ይመልከቱ</Text>
               </TouchableOpacity>
             </Link>
-          )}
-          ListEmptyComponent={
+          </View>
+
+          {latestAnnouncements.length > 0 ? (
+            latestAnnouncements.map((item) => (
+              <Link key={item.id} href={`/announcements/${item.slug}`} asChild>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.title}
+                  className="border-border mb-3 flex-row items-start gap-3 rounded-2xl border bg-white p-3">
+                  {item.thumbnailUrl ? (
+                    <Image
+                      source={{ uri: item.thumbnailUrl }}
+                      className="h-16 w-16 rounded-xl bg-gray-100"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="bg-accent/10 h-16 w-16 items-center justify-center rounded-xl">
+                      <Ionicons name="megaphone" size={24} color="#1F2937" />
+                    </View>
+                  )}
+
+                  <View className="flex-1">
+                    <Text
+                      numberOfLines={1}
+                      className="text-primary text-[16px] font-bold tracking-tight">
+                      {item.title}
+                    </Text>
+                    <Text
+                      numberOfLines={2}
+                      className="mt-1 text-[13px] leading-[1.4] text-gray-500">
+                      {item.content}
+                    </Text>
+                    <View className="mt-2 flex-row items-center gap-1">
+                      <Ionicons name="time-outline" size={13} color="#9CA3AF" />
+                      <Text className="text-[12px] text-gray-400">
+                        {formatRelativeDate(item.postedAt)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color="#9CA3AF"
+                    style={{ marginTop: 4 }}
+                  />
+                </TouchableOpacity>
+              </Link>
+            ))
+          ) : (
             <View className="mt-16 items-center">
               <Ionicons name="megaphone-outline" size={32} color="#9CA3AF" />
               <Text className="mt-3 text-[14px] text-gray-500">ምንም ማስታወቂያ የለም</Text>
             </View>
-          }
-        />
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
