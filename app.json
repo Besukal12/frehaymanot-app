@@ -15,7 +15,7 @@
         {
           "image": "./assets/splash-screen.png",
           "backgroundColor": "#ffffff",
-          "resizeMode": "contain"
+          "resizeMode": "cover"
         }
       ],
       ["expo-router"],
@@ -39,7 +39,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.jpg",
         "backgroundColor": "#ffffff"
       },
       "package": "com.besukal12.frehaymanot"
