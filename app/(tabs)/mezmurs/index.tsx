@@ -4,21 +4,22 @@ import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-import { mezmurCategories, mezmurs, type MockMezmurCategory } from '../../../data/mockMezmurs';
-
 import { useApp } from '../../../context/AppContext';
 import { PageHeader } from '../../../components/PageHeader';
 import { SearchField } from '../../../components/SearchField';
 import { EmptyState } from '../../../components/EmptyState';
+import { ScreenLoader } from '../../../components/ScreenLoader';
+import type { Mezmur, MezmurCategory } from '../../../data/types';
 
-type CategoryWithItems = MockMezmurCategory & {
-  items: typeof mezmurs;
+type CategoryWithItems = MezmurCategory & {
+  items: Mezmur[];
 };
 
 type MezmurView = 'all' | 'categories';
 
 const Mezmurs = () => {
-  const { theme } = useApp();
+  const { theme, mezmurs, mezmurCategories, isMezmurLoading, mezmurError, refreshMezmurs } =
+    useApp();
 
   const [query, setQuery] = useState('');
   const [view, setView] = useState<MezmurView>('categories');
@@ -43,7 +44,7 @@ const Mezmurs = () => {
         };
       })
       .filter((category) => category.items.length > 0);
-  }, [normalizedQuery]);
+  }, [mezmurCategories, mezmurs, normalizedQuery]);
 
   const filteredMezmurs = useMemo(
     () =>
@@ -53,8 +54,16 @@ const Mezmurs = () => {
           mezmur.title.toLowerCase().includes(normalizedQuery) ||
           mezmur.description?.toLowerCase().includes(normalizedQuery)
       ),
-    [normalizedQuery]
+    [mezmurs, normalizedQuery]
   );
+
+  if (isMezmurLoading && mezmurs.length === 0) {
+    return (
+      <SafeAreaView className="flex-1" style={{ backgroundColor: theme.colors.background }}>
+        <ScreenLoader />
+      </SafeAreaView>
+    );
+  }
 
   const toggleCategory = (categoryId: number) => {
     setExpandedIds((current) =>
@@ -126,7 +135,7 @@ const Mezmurs = () => {
                     className="mb-4"
                     style={{ width: '48%' }}>
                     <Image
-                      source={item.imageUrl}
+                      source={item.imageUrl ? { uri: item.imageUrl } : undefined}
                       className="h-35 w-full rounded-xl"
                       resizeMode="cover"
                       // style={{ aspectRatio: 1.55 }}
@@ -162,7 +171,7 @@ const Mezmurs = () => {
           borderColor: theme.colors.border,
         }}>
         <Image
-          source={item.category.imageUrl}
+          source={item.category.imageUrl ? { uri: item.category.imageUrl } : undefined}
           className="h-16 w-16 rounded-xl"
           resizeMode="cover"
         />
@@ -235,7 +244,21 @@ const Mezmurs = () => {
             <View className="h-5" />
           </View>
         }
-        ListEmptyComponent={<EmptyState icon="musical-notes-outline" message="ምንም መዝሙር አልተገኘም" />}
+        ListEmptyComponent={
+          <View className="items-center">
+            <EmptyState icon="musical-notes-outline" message={mezmurError ?? 'ምንም መዝሙር አልተገኘም'} />
+            {mezmurError ? (
+              <TouchableOpacity
+                onPress={() => void refreshMezmurs()}
+                className="mt-4 rounded-xl px-4 py-3"
+                style={{ backgroundColor: theme.colors.primary }}>
+                <Text className="font-semibold" style={{ color: theme.colors.white }}>
+                  እንደገና ሞክር
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        }
       />
     </SafeAreaView>
   );

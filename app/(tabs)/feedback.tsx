@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -20,18 +21,29 @@ const Feedback = () => {
   const { submitFeedback, theme } = useApp();
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const trimmedMessage = message.trim();
   const canSubmit = trimmedMessage.length > 0;
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!canSubmit) {
       return;
     }
 
-    submitFeedback(trimmedMessage);
-    setMessage('');
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await submitFeedback(trimmedMessage);
+      setMessage('');
+      setSubmitted(true);
+    } catch {
+      setError('አስተያየቱን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -83,16 +95,26 @@ const Feedback = () => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleSubmit}
-              disabled={!canSubmit}
+              disabled={!canSubmit || isSubmitting}
               accessibilityRole="button"
               accessibilityLabel="አስተያየት ላክ"
               className={`mt-5 min-h-14 flex-row items-center justify-center gap-2 rounded-2xl ${
                 canSubmit ? 'bg-primary' : 'bg-[#D8C9C0]'
               }`}>
-              <Ionicons name="send" size={18} color={colors.white} />
-              <Text className="text-[15px] font-bold text-white">አስተያየት ላክ</Text>
+              {isSubmitting ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <>
+                  <Ionicons name="send" size={18} color={colors.white} />
+                  <Text className="text-[15px] font-bold text-white">አስተያየት ላክ</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
+
+          {error ? (
+            <Text className="mt-4 text-center text-[13px] text-red-600">{error}</Text>
+          ) : null}
 
           {submitted && (
             <View

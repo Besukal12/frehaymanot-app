@@ -2,12 +2,21 @@ import { ImageBackground, View, Text, ScrollView, TouchableOpacity, Image } from
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { QUICK_ACTIONS, LATEST_MEZMURS } from '../../data/data';
+import { QUICK_ACTIONS } from '../../data/data';
 import { colors } from 'constants/theme';
 import { useApp } from '../../context/AppContext';
+import { ScreenLoader } from '../../components/ScreenLoader';
 
 const Index = () => {
-  const { theme } = useApp();
+  const { theme, mezmurs, isMezmurLoading } = useApp();
+
+  if (isMezmurLoading && mezmurs.length === 0) {
+    return (
+      <SafeAreaView className="flex-1" style={{ backgroundColor: theme.colors.background }}>
+        <ScreenLoader />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView
@@ -55,7 +64,11 @@ const Index = () => {
             <View className="flex-row items-center justify-between px-5 pt-5">
               <View className="flex-row items-center gap-2 rounded-full bg-black/35 px-3 py-2">
                 <Ionicons name="book-outline" size={16} color="#FFFFFF" />
-                <Text className="text-[12px] font-bold tracking-wide" style={{color: theme.colors.white}}>የዛሬ ቃል</Text>
+                <Text
+                  className="text-[12px] font-bold tracking-wide"
+                  style={{ color: theme.colors.white }}>
+                  የዛሬ ቃል
+                </Text>
               </View>
             </View>
             <View className="gap-3 bg-black/65 px-5 pt-7 pb-5">
@@ -102,7 +115,7 @@ const Index = () => {
           </View>
 
           <View className="mt-3 gap-3">
-            {LATEST_MEZMURS.map((mezmur) => (
+            {mezmurs.slice(0, 4).map((mezmur) => (
               <Link key={mezmur.id} href={`/mezmurs/${mezmur.id}`} asChild>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -110,7 +123,9 @@ const Index = () => {
                   accessibilityLabel={mezmur.title}
                   className="border-border flex-row items-center gap-3 rounded-2xl border bg-white p-3">
                   <Image
-                    source={mezmur.category.imageUrl}
+                    source={
+                      mezmur.category.imageUrl ? { uri: mezmur.category.imageUrl } : undefined
+                    }
                     className="h-18 w-18 rounded-xl"
                     resizeMode="cover"
                   />

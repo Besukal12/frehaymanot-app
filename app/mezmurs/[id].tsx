@@ -12,8 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { mezmurs } from '../../data/mockMezmurs';
 import { useApp } from '../../context/AppContext';
+import { ScreenLoader } from '../../components/ScreenLoader';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -48,9 +48,17 @@ const MezmurPreview = () => {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { theme } = useApp();
+  const { theme, mezmurs, isMezmurLoading } = useApp();
 
   const mezmur = mezmurs.find((item) => String(item.id) === String(id));
+
+  if (isMezmurLoading && !mezmur) {
+    return (
+      <SafeAreaView className="flex-1" style={{ backgroundColor: theme.colors.background }}>
+        <ScreenLoader />
+      </SafeAreaView>
+    );
+  }
 
   if (!mezmur) {
     return (
@@ -87,7 +95,7 @@ const MezmurPreview = () => {
     );
   }
 
-  const backgroundImage = mezmur.category.imageUrl;
+  const backgroundImage = mezmur.category.imageUrl ? { uri: mezmur.category.imageUrl } : undefined;
 
   const fadeStart = SCREEN_HEIGHT * 0.18;
   const darkTheme = isDarkColor(theme.colors.primary);
