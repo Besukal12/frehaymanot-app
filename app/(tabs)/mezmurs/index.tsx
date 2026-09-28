@@ -8,11 +8,11 @@ import { useApp } from '../../../context/AppContext';
 import { PageHeader } from '../../../components/PageHeader';
 import { SearchField } from '../../../components/SearchField';
 import { EmptyState } from '../../../components/EmptyState';
-import { ScreenLoader } from '../../../components/ScreenLoader';
-import type { Mezmur, MezmurCategory } from '../../../data/types';
+import { MezmurListSkeleton } from '../../../components/MezmurSkeleton';
+import type { MezmurCategory, MezmurSummary } from '../../../data/types';
 
 type CategoryWithItems = MezmurCategory & {
-  items: Mezmur[];
+  items: MezmurSummary[];
 };
 
 type MezmurView = 'all' | 'categories';
@@ -57,13 +57,7 @@ const Mezmurs = () => {
     [mezmurs, normalizedQuery]
   );
 
-  if (isMezmurLoading && mezmurs.length === 0) {
-    return (
-      <SafeAreaView className="flex-1" style={{ backgroundColor: theme.colors.background }}>
-        <ScreenLoader />
-      </SafeAreaView>
-    );
-  }
+  const isInitialLoad = isMezmurLoading && mezmurs.length === 0;
 
   const toggleCategory = (categoryId: number) => {
     setExpandedIds((current) =>
@@ -206,6 +200,14 @@ const Mezmurs = () => {
           <View>
             <PageHeader title="መዝሙሮች" subtitle="በምድብ የተደራጁ መዝሙሮችን ይምረጡ" icon="musical-notes" />
 
+            {mezmurError && mezmurs.length > 0 ? (
+              <TouchableOpacity
+                onPress={() => void refreshMezmurs()}
+                className="mt-2 rounded-xl p-3">
+                <Text style={{ color: theme.colors.muted }}>{mezmurError} · እንደገና ሞክር</Text>
+              </TouchableOpacity>
+            ) : null}
+
             {/* SEARCH */}
             <SearchField value={query} onChangeText={setQuery} placeholder="መዝሙር ፈልግ..." />
 
@@ -245,19 +247,23 @@ const Mezmurs = () => {
           </View>
         }
         ListEmptyComponent={
-          <View className="items-center">
-            <EmptyState icon="musical-notes-outline" message={mezmurError ?? 'ምንም መዝሙር አልተገኘም'} />
-            {mezmurError ? (
-              <TouchableOpacity
-                onPress={() => void refreshMezmurs()}
-                className="mt-4 rounded-xl px-4 py-3"
-                style={{ backgroundColor: theme.colors.primary }}>
-                <Text className="font-semibold" style={{ color: theme.colors.white }}>
-                  እንደገና ሞክር
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
+          isInitialLoad ? (
+            <MezmurListSkeleton />
+          ) : (
+            <View className="items-center">
+              <EmptyState icon="musical-notes-outline" message={mezmurError ?? 'ምንም መዝሙር አልተገኘም'} />
+              {mezmurError ? (
+                <TouchableOpacity
+                  onPress={() => void refreshMezmurs()}
+                  className="mt-4 rounded-xl px-4 py-3"
+                  style={{ backgroundColor: theme.colors.primary }}>
+                  <Text className="font-semibold" style={{ color: theme.colors.white }}>
+                    እንደገና ሞክር
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          )
         }
       />
     </SafeAreaView>

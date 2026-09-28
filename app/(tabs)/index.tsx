@@ -5,18 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { QUICK_ACTIONS } from '../../data/data';
 import { colors } from 'constants/theme';
 import { useApp } from '../../context/AppContext';
-import { ScreenLoader } from '../../components/ScreenLoader';
+import { MezmurRowsSkeleton } from '../../components/MezmurSkeleton';
 
 const Index = () => {
   const { theme, mezmurs, isMezmurLoading } = useApp();
-
-  if (isMezmurLoading && mezmurs.length === 0) {
-    return (
-      <SafeAreaView className="flex-1" style={{ backgroundColor: theme.colors.background }}>
-        <ScreenLoader />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView
@@ -115,6 +107,7 @@ const Index = () => {
           </View>
 
           <View className="mt-3 gap-3">
+            {mezmurs.length === 0 && isMezmurLoading ? <MezmurRowsSkeleton rows={2} /> : null}
             {mezmurs.slice(0, 4).map((mezmur) => (
               <Link key={mezmur.id} href={`/mezmurs/${mezmur.id}`} asChild>
                 <TouchableOpacity

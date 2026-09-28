@@ -1,51 +1,22 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  downloadAsync,
-  getInfoAsync,
-  makeDirectoryAsync,
-  documentDirectory,
-} from 'expo-file-system/legacy';
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+} from 'react';
 import { View } from 'react-native';
 import { vars } from 'nativewind';
-import { fetchMezmurData, sendFeedback } from '../data/api';
-import { FeedbackItem, Mezmur, MezmurCategory } from '../data/types';
+import { fetchMezmurById, fetchMezmurData, sendFeedback } from '../data/api';
+import { FeedbackItem, Mezmur, MezmurCategory, MezmurSummary } from '../data/types';
 import { themes, type AppTheme, type ThemeId } from '../constants/theme';
 
-const MEZMURS_CACHE_KEY = '@fre-haymanot/mezmurs';
+const MEZMURS_CACHE_KEY = '@fre-haymanot/mezmur-summaries-v2';
+const LEGACY_MEZMURS_CACHE_KEY = '@fre-haymanot/mezmurs';
 const CATEGORIES_CACHE_KEY = '@fre-haymanot/mezmur-categories';
-const CATEGORY_IMAGE_DIRECTORY = `${documentDirectory ?? ''}mezmur-images/`;
-
-async function cacheCategoryImages(categories: MezmurCategory[]) {
-  if (!documentDirectory) {
-    return categories;
-  }
-
-  await makeDirectoryAsync(CATEGORY_IMAGE_DIRECTORY, { intermediates: true });
-
-  return Promise.all(
-    categories.map(async (category) => {
-      if (!category.imageUrl || category.imageUrl.startsWith('file://')) {
-        return category;
-      }
-
-      const extension = category.imageUrl.split('.').pop()?.split('?')[0] ?? 'jpg';
-      const localUri = `${CATEGORY_IMAGE_DIRECTORY}${category.id}.${extension}`;
-
-      try {
-        const existingFile = await getInfoAsync(localUri);
-        if (existingFile.exists) {
-          return { ...category, imageUrl: localUri };
-        }
-
-        const downloadedFile = await downloadAsync(category.imageUrl, localUri);
-        return { ...category, imageUrl: downloadedFile.uri };
-      } catch {
-        return category;
-      }
-    })
-  );
-}
 
 interface AppContextValue {
   downloadedCourseIds: string[];
@@ -54,11 +25,13 @@ interface AppContextValue {
 
   feedbackItems: FeedbackItem[];
   submitFeedback: (message: string) => Promise<void>;
-  mezmurs: Mezmur[];
+  mezmurs: MezmurSummary[];
   mezmurCategories: MezmurCategory[];
   isMezmurLoading: boolean;
   mezmurError: string | null;
   refreshMezmurs: () => Promise<void>;
+  mezmurDetails: Record<number, Mezmur>;
+  getMezmurById: (id: number) => Promise<Mezmur>;
   theme: AppTheme;
   themeId: ThemeId;
   setTheme: (themeId: ThemeId) => void;
@@ -69,56 +42,132 @@ const AppContext = createContext<AppContextValue | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [downloadedCourseIds, setDownloadedCourseIds] = useState<string[]>([]);
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
-  const [mezmurs, setMezmurs] = useState<Mezmur[]>([]);
+  const [mezmurs, setMezmurs] = useState<MezmurSummary[]>([]);
   const [mezmurCategories, setMezmurCategories] = useState<MezmurCategory[]>([]);
-  const [isMezmurLoading, setIsMezmurLoading] = useState(true);
+  const [loadingRequestCount, setLoadingRequestCount] = useState(0);
   const [mezmurError, setMezmurError] = useState<string | null>(null);
+  const [mezmurDetails, setMezmurDetails] = useState<Record<number, Mezmur>>({});
   const [themeId, setThemeId] = useState<ThemeId>('default');
+  const mountedRef = useRef(true);
+  const refreshRequestRef = useRef<Promise<void> | null>(null);
+  const detailRequestsRef = useRef(new Map<number, Promise<Mezmur>>());
+  const detailCacheRef = useRef<Record<number, Mezmur>>({});
+  const isMezmurLoading = loadingRequestCount > 0;
   const theme = themes.find((item) => item.id === themeId) ?? themes[0];
 
-  const refreshMezmurs = async () => {
+  const refreshMezmurs = useCallback(() => {
+    if (refreshRequestRef.current) {
+      return refreshRequestRef.current;
+    }
+
     setMezmurError(null);
+    setLoadingRequestCount((count) => count + 1);
 
-    try {
-      const cachedMezmurs = await AsyncStorage.getItem(MEZMURS_CACHE_KEY);
-      const cachedCategories = await AsyncStorage.getItem(CATEGORIES_CACHE_KEY);
-
-      if (cachedMezmurs) {
-        setMezmurs(JSON.parse(cachedMezmurs) as Mezmur[]);
-      }
-
-      if (cachedCategories) {
-        setMezmurCategories(JSON.parse(cachedCategories) as MezmurCategory[]);
-      }
-    } catch {
-      setMezmurError('የተቀመጠውን መረጃ ማንበብ አልተቻለም');
-    }
-
-    try {
-      const freshData = await fetchMezmurData();
-      const cachedCategories = await cacheCategoryImages(freshData.categories);
-      const categoriesById = new Map(cachedCategories.map((category) => [category.id, category]));
-      const cachedMezmurs = freshData.mezmurs.map((mezmur) => ({
-        ...mezmur,
-        category: categoriesById.get(mezmur.categoryId) ?? mezmur.category,
-      }));
-
-      setMezmurs(cachedMezmurs);
-      setMezmurCategories(cachedCategories);
-      await Promise.all([
-        AsyncStorage.setItem(MEZMURS_CACHE_KEY, JSON.stringify(cachedMezmurs)),
-        AsyncStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(cachedCategories)),
+    const refreshRequest = (async () => {
+      const cachedDataRequest = Promise.all([
+        AsyncStorage.getItem(MEZMURS_CACHE_KEY),
+        AsyncStorage.getItem(LEGACY_MEZMURS_CACHE_KEY),
+        AsyncStorage.getItem(CATEGORIES_CACHE_KEY),
       ]);
-    } catch {
-      setMezmurError((current) => current ?? 'ከኢንተርኔት መረጃ ማግኘት አልተቻለም');
-    } finally {
-      setIsMezmurLoading(false);
+      const freshDataRequest = fetchMezmurData();
+
+      try {
+        const [cachedMezmurs, legacyMezmurs, cachedCategories] = await cachedDataRequest;
+
+        const storedMezmurs = cachedMezmurs ?? legacyMezmurs;
+        if (mountedRef.current && storedMezmurs) {
+          const parsedMezmurs = JSON.parse(storedMezmurs) as MezmurSummary[];
+          const summaries = parsedMezmurs.map((mezmur) => ({
+            id: mezmur.id,
+            title: mezmur.title,
+            description: mezmur.description,
+            categoryId: mezmur.categoryId,
+            createdAt: mezmur.createdAt,
+            updatedAt: mezmur.updatedAt,
+            category: mezmur.category,
+          }));
+          setMezmurs(summaries);
+
+          if (!cachedMezmurs) {
+            void AsyncStorage.setItem(MEZMURS_CACHE_KEY, JSON.stringify(summaries)).catch(
+              (error: unknown) => console.warn('Failed to migrate cached Mezmurs', error)
+            );
+          }
+        }
+
+        if (mountedRef.current && cachedCategories) {
+          setMezmurCategories(JSON.parse(cachedCategories) as MezmurCategory[]);
+        }
+      } catch {
+        // Cache is optional and the network request is already in progress.
+      }
+
+      try {
+        const freshData = await freshDataRequest;
+
+        if (mountedRef.current) {
+          setMezmurs(freshData.mezmurs);
+          setMezmurCategories(freshData.categories);
+        }
+
+        void Promise.all([
+          AsyncStorage.setItem(MEZMURS_CACHE_KEY, JSON.stringify(freshData.mezmurs)),
+          AsyncStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(freshData.categories)),
+        ]).catch((error: unknown) => console.warn('Failed to cache Mezmur data', error));
+      } catch {
+        if (mountedRef.current) {
+          setMezmurError('ከኢንተርኔት መረጃ ማግኘት አልተቻለም');
+        }
+      }
+    })().finally(() => {
+      if (mountedRef.current) {
+        setLoadingRequestCount((count) => Math.max(0, count - 1));
+      }
+      refreshRequestRef.current = null;
+    });
+
+    refreshRequestRef.current = refreshRequest;
+    return refreshRequest;
+  }, []);
+
+  const getMezmurById = useCallback((id: number) => {
+    const cachedDetail = detailCacheRef.current[id];
+    if (cachedDetail) {
+      return Promise.resolve(cachedDetail);
     }
-  };
+
+    const inFlightRequest = detailRequestsRef.current.get(id);
+    if (inFlightRequest) {
+      return inFlightRequest;
+    }
+
+    setLoadingRequestCount((count) => count + 1);
+    const detailRequest = fetchMezmurById(id)
+      .then((mezmur) => {
+        detailCacheRef.current[id] = mezmur;
+        if (mountedRef.current) {
+          setMezmurDetails((current) => ({ ...current, [id]: mezmur }));
+        }
+        return mezmur;
+      })
+      .finally(() => {
+        if (mountedRef.current) {
+          setLoadingRequestCount((count) => Math.max(0, count - 1));
+        }
+        detailRequestsRef.current.delete(id);
+      });
+
+    detailRequestsRef.current.set(id, detailRequest);
+    return detailRequest;
+  }, []);
 
   useEffect(() => {
+    mountedRef.current = true;
     void refreshMezmurs();
-  }, []);
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [refreshMezmurs]);
 
   function toggleDownload(courseId: string) {
     setDownloadedCourseIds(
@@ -149,6 +198,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isMezmurLoading,
     mezmurError,
     refreshMezmurs,
+    mezmurDetails,
+    getMezmurById,
     theme,
     themeId,
     setTheme: setThemeId,

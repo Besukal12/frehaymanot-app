@@ -16,13 +16,22 @@ export interface MezmurCategory {
   };
 }
 
-export interface Mezmur {
+export interface MezmurCategoryReference {
+  id: number;
+  name: string;
+  imageUrl: string | null;
+}
+
+export interface MezmurSummary {
   id: number;
   title: string;
   description: string | null;
   categoryId: number;
-  mezmurPoem: string;
   createdAt: string;
   updatedAt: string;
-  category: MezmurCategory;
+  category: MezmurCategoryReference;
+}
+
+export interface Mezmur extends MezmurSummary {
+  mezmurPoem: string;
 }

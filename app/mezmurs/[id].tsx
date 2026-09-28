@@ -11,9 +11,10 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
 
 import { useApp } from '../../context/AppContext';
-import { ScreenLoader } from '../../components/ScreenLoader';
+import { MezmurDetailSkeleton } from '../../components/MezmurSkeleton';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -48,16 +49,42 @@ const MezmurPreview = () => {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { theme, mezmurs, isMezmurLoading } = useApp();
+  const { theme, mezmurDetails, getMezmurById } = useApp();
+  const [failedId, setFailedId] = useState<number | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const mezmurId = Number(id);
+  const mezmur = mezmurDetails[mezmurId];
+  const hasValidId = Number.isInteger(mezmurId) && mezmurId > 0;
+  const detailError = !hasValidId
+    ? 'መዝሙሩ አልተገኘም'
+    : failedId === mezmurId
+      ? 'መዝሙሩን ማግኘት አልተቻለም'
+      : null;
+  const canRetry = hasValidId && failedId === mezmurId;
+  const isDetailLoading = !mezmur && !detailError;
 
-  const mezmur = mezmurs.find((item) => String(item.id) === String(id));
+  useEffect(() => {
+    let active = true;
 
-  if (isMezmurLoading && !mezmur) {
-    return (
-      <SafeAreaView className="flex-1" style={{ backgroundColor: theme.colors.background }}>
-        <ScreenLoader />
-      </SafeAreaView>
-    );
+    if (!hasValidId) {
+      return () => {
+        active = false;
+      };
+    }
+
+    void getMezmurById(mezmurId).catch(() => {
+      if (active) {
+        setFailedId(mezmurId);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [getMezmurById, hasValidId, mezmurId, retryCount]);
+
+  if (isDetailLoading && !mezmur) {
+    return <MezmurDetailSkeleton />;
   }
 
   if (!mezmur) {
@@ -74,11 +101,18 @@ const MezmurPreview = () => {
           style={{
             color: theme.colors.ink,
           }}>
-          መዝሙሩ አልተገኘም
+          {detailError ?? 'መዝሙሩ አልተገኘም'}
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            if (canRetry) {
+              setFailedId(null);
+              setRetryCount((count) => count + 1);
+            } else {
+              router.back();
+            }
+          }}
           className="mt-4 rounded-full px-6 py-3"
           style={{
             backgroundColor: theme.colors.primary,
@@ -88,7 +122,7 @@ const MezmurPreview = () => {
             style={{
               color: theme.colors.white,
             }}>
-            ተመለስ
+            {canRetry ? 'እንደገና ሞክር' : 'ተመለስ'}
           </Text>
         </TouchableOpacity>
       </SafeAreaView>
