@@ -9,15 +9,33 @@ import {
   Image,
   FlatList,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { announcements, type MockAnnouncement } from '../../data/mockAnnouncements';
+import {
+  announcements,
+  type AnnouncementAudience,
+  type MockAnnouncement,
+} from '../../data/mockAnnouncements';
 import { useApp } from '../../context/AppContext';
 import { PageHeader } from '../../components/PageHeader';
 
 const ANNOUNCEMENT_SEEN_IDS_KEY = '@fre-haymanot/announcement-seen-ids-v1';
+const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
+  YOUTH: 'ለወጣት',
+  CENTRAL: 'ለማዕከላዊያን',
+  CHILDREN: 'ለህፃናት',
+  EVERYONE: 'ለሁሉም',
+};
+const AUDIENCE_FILTERS = [
+  { value: 'ALL', label: 'ሁሉም' },
+  { value: 'YOUTH', label: AUDIENCE_LABELS.YOUTH },
+  { value: 'CENTRAL', label: AUDIENCE_LABELS.CENTRAL },
+  { value: 'CHILDREN', label: AUDIENCE_LABELS.CHILDREN },
+  { value: 'EVERYONE', label: AUDIENCE_LABELS.EVERYONE },
+] as const;
 
 function ScrollReveal({ children }: { children: ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -69,6 +87,12 @@ const Announcements = () => {
   const { theme } = useApp();
   const [announcementItems, setAnnouncementItems] = useState(announcements);
   const [refreshing, setRefreshing] = useState(false);
+  const [audienceFilter, setAudienceFilter] =
+    useState<(typeof AUDIENCE_FILTERS)[number]['value']>('ALL');
+  const visibleAnnouncements =
+    audienceFilter === 'ALL'
+      ? announcementItems
+      : announcementItems.filter((item) => item.audience === audienceFilter);
 
   useEffect(() => {
     void AsyncStorage.getItem(ANNOUNCEMENT_SEEN_IDS_KEY)
@@ -124,7 +148,7 @@ const Announcements = () => {
         <Ionicons name="arrow-back" size={20} color={theme.colors.primary} />
       </TouchableOpacity>
       <FlatList
-        data={announcementItems}
+        data={visibleAnnouncements}
         keyExtractor={(item) => String(item.id)}
         contentContainerClassName="px-5 pt-3 pb-8"
         showsVerticalScrollIndicator={false}
@@ -138,7 +162,35 @@ const Announcements = () => {
         }
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListHeaderComponent={
-          <PageHeader title="ማስታወቂያዎች" subtitle="አዳዲስ ዜናዎችን እና መረጃዎችን ይከታተሉ" icon="megaphone" />
+          <View>
+            <PageHeader title="ማስታወቂያዎች" subtitle="አዳዲስ ዜናዎችን እና መረጃዎችን ይከታተሉ" icon="megaphone" />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingVertical: 12 }}>
+              {AUDIENCE_FILTERS.map((filter) => {
+                const selected = audienceFilter === filter.value;
+                return (
+                  <TouchableOpacity
+                    key={filter.value}
+                    onPress={() => setAudienceFilter(filter.value)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    className="rounded-full border px-3 py-2"
+                    style={{
+                      backgroundColor: selected ? theme.colors.primary : theme.colors.white,
+                      borderColor: selected ? theme.colors.primary : theme.colors.border,
+                    }}>
+                    <Text
+                      className="text-[13px] font-semibold"
+                      style={{ color: selected ? theme.colors.white : theme.colors.ink }}>
+                      {filter.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
         }
         renderItem={({ item }: { item: MockAnnouncement }) => (
           <ScrollReveal>
@@ -166,6 +218,15 @@ const Announcements = () => {
                     className="text-primary text-[16px] font-bold tracking-tight">
                     {item.title}
                   </Text>
+                  <View
+                    className="mt-1 self-start rounded-full px-2 py-0.5"
+                    style={{ backgroundColor: theme.colors.background }}>
+                    <Text
+                      className="text-[11px] font-semibold"
+                      style={{ color: theme.colors.primary }}>
+                      {AUDIENCE_LABELS[item.audience]}
+                    </Text>
+                  </View>
                   <Text numberOfLines={2} className="mt-1 text-[13px] leading-[1.4] text-gray-500">
                     {item.content}
                   </Text>
@@ -190,7 +251,11 @@ const Announcements = () => {
         ListEmptyComponent={
           <View className="mt-16 items-center">
             <Ionicons name="megaphone-outline" size={32} color="#9CA3AF" />
-            <Text className="mt-3 text-[14px] text-gray-500">ምንም ማስታወቂያ የለም</Text>
+            <Text className="mt-3 text-[14px] text-gray-500">
+              {audienceFilter === 'ALL'
+                ? 'ምንም ማስታወቂያ የለም'
+                : `${AUDIENCE_LABELS[audienceFilter]} ማስታወቂያ የለም`}
+            </Text>
           </View>
         }
       />

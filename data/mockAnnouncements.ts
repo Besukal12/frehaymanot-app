@@ -1,8 +1,11 @@
+export type AnnouncementAudience = 'YOUTH' | 'CENTRAL' | 'CHILDREN' | 'EVERYONE';
+
 export interface MockAnnouncement {
   id: number;
   title: string;
   slug: string;
   content: string;
+  audience: AnnouncementAudience;
   thumbnailUrl: string | null;
   postedAt: string;
   createdAt: string;
@@ -15,6 +18,7 @@ export const announcements: MockAnnouncement[] = [
   {
     id: 1,
     title: 'የእሁድ የጋራ አምልኮ መርሃ ግብር',
+    audience: 'EVERYONE',
     slug: 'sunday-worship-program',
     content: 'የዚህ ሳምንት የጋራ አምልኮ መርሃ ግብር እሁድ ከጠዋቱ 3:00 ጀምሮ ይካሄዳል። ሁላችሁም በደስታ እንድትሳተፉ በፍቅር እንጋብዛለን።',
     thumbnailUrl,
@@ -25,6 +29,7 @@ export const announcements: MockAnnouncement[] = [
   {
     id: 2,
     title: 'የመጽሐፍ ቅዱስ ጥናት ሳምንታዊ ስብሰባ',
+    audience: 'CENTRAL',
     slug: 'weekly-bible-study-meeting',
     content: 'የመጽሐፍ ቅዱስ ጥናታችን በየረቡዕ ምሽት ከ11:00 ጀምሮ ይካሄዳል። የዚህ ሳምንት ጥናት በተስፋ እና በእምነት ላይ ያተኩራል።',
     thumbnailUrl,
@@ -35,6 +40,7 @@ export const announcements: MockAnnouncement[] = [
   {
     id: 3,
     title: 'የወጣቶች የጸሎት ምሽት',
+    audience: 'YOUTH',
     slug: 'youth-prayer-night',
     content:
       'የወጣቶች የጸሎት ምሽት ቅዳሜ ከምሽቱ 12:00 ጀምሮ ይካሄዳል። ወጣቶች በጸሎት፣ በውይይት እና በምስጋና እንድትሳተፉ እንጠብቃችኋለን።',
@@ -46,6 +52,7 @@ export const announcements: MockAnnouncement[] = [
   {
     id: 4,
     title: 'የአዲስ ዓመት ምስጋና መርሃ ግብር',
+    audience: 'CHILDREN',
     slug: 'new-year-thanksgiving-program',
     content: 'አዲሱን ዓመት በምስጋና ለመቀበል ልዩ የምስጋና መርሃ ግብር ተዘጋጅቷል። በዚህ የተባረከ ጊዜ አብረን እንድንሆን እንጋብዛለን።',
     thumbnailUrl,
