@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Alert, Animated, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Animated,
+  FlatList,
+  Image,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -96,9 +105,10 @@ const Mezmurs = () => {
       return;
     }
 
-    const message = result.added === 0
-      ? 'አዲስ መዝሙር አልተገኘም፤ ዝርዝሩ ወቅታዊ ነው።'
-      : `${result.added} አዲስ መዝሙር ተጨምሯል። ${result.downloaded} ለኦፍላይን ተቀምጧል።`;
+    const message =
+      result.added === 0
+        ? 'አዲስ መዝሙር አልተገኘም፤ ዝርዝሩ ወቅታዊ ነው።'
+        : `${result.added} አዲስ መዝሙር ተጨምሯል። ${result.downloaded} ለኦፍላይን ተቀምጧል።`;
     const downloadWarning = result.downloadFailed
       ? `\n${result.downloadFailed} መዝሙር ማውረድ አልተቻለም፤ ኢንተርኔት ሲኖር እንደገና ያድሱ።`
       : '';
@@ -119,117 +129,117 @@ const Mezmurs = () => {
 
     return (
       <ScrollReveal>
-      <View
-        className="b-20 mb-4 overflow-hidden rounded-2xl"
-        style={{
-          backgroundColor: theme.colors.white,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-        }}>
-        {/* CATEGORY HEADER */}
-        <TouchableOpacity
-          onPress={() => toggleCategory(item.id)}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityState={{ expanded }}
-          className="flex-row items-center justify-between px-4 py-4">
-          <View className="flex-row items-center gap-3">
+        <View
+          className="b-20 mb-4 overflow-hidden rounded-2xl"
+          style={{
+            backgroundColor: theme.colors.white,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }}>
+          {/* CATEGORY HEADER */}
+          <TouchableOpacity
+            onPress={() => toggleCategory(item.id)}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityState={{ expanded }}
+            className="flex-row items-center justify-between px-4 py-4">
+            <View className="flex-row items-center gap-3">
+              <View
+                className="h-10 w-10 items-center justify-center rounded-xl"
+                style={{
+                  backgroundColor: theme.colors.background,
+                }}>
+                <Ionicons name="musical-notes" size={19} color={theme.colors.primary} />
+              </View>
+
+              <View>
+                <Text className="text-[17px] font-bold" style={{ color: theme.colors.ink }}>
+                  {item.name}
+                </Text>
+
+                <Text className="mt-0.5 text-[12px]" style={{ color: theme.colors.muted }}>
+                  {item.items.length} መዝሙሮች
+                </Text>
+              </View>
+            </View>
+
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={22}
+              color={theme.colors.muted}
+            />
+          </TouchableOpacity>
+
+          {/* CATEGORY CONTENT */}
+          {expanded && (
             <View
-              className="h-10 w-10 items-center justify-center rounded-xl"
+              className="border-t px-3 pt-3 pb-2"
               style={{
-                backgroundColor: theme.colors.background,
+                borderColor: theme.colors.border,
               }}>
-              <Ionicons name="musical-notes" size={19} color={theme.colors.primary} />
+              <View className="flex-row flex-wrap justify-between">
+                {item.items.map((mezmur) => (
+                  <Link key={mezmur.id} href={`/mezmurs/${mezmur.id}`} asChild>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel={mezmur.title}
+                      className="mb-4"
+                      style={{ width: '48%' }}>
+                      <Image
+                        source={item.imageUrl ? { uri: item.imageUrl } : undefined}
+                        className="h-35 w-full rounded-xl"
+                        resizeMode="cover"
+                        // style={{ aspectRatio: 1.55 }}
+                      />
+
+                      <Text
+                        numberOfLines={2}
+                        className="mt-2 text-center text-[14px] font-semibold"
+                        style={{
+                          color: theme.colors.ink,
+                        }}>
+                        {mezmur.title}
+                      </Text>
+                    </TouchableOpacity>
+                  </Link>
+                ))}
+              </View>
             </View>
-
-            <View>
-              <Text className="text-[17px] font-bold" style={{ color: theme.colors.ink }}>
-                {item.name}
-              </Text>
-
-              <Text className="mt-0.5 text-[12px]" style={{ color: theme.colors.muted }}>
-                {item.items.length} መዝሙሮች
-              </Text>
-            </View>
-          </View>
-
-          <Ionicons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={22}
-            color={theme.colors.muted}
-          />
-        </TouchableOpacity>
-
-        {/* CATEGORY CONTENT */}
-        {expanded && (
-          <View
-            className="border-t px-3 pt-3 pb-2"
-            style={{
-              borderColor: theme.colors.border,
-            }}>
-            <View className="flex-row flex-wrap justify-between">
-              {item.items.map((mezmur) => (
-                <Link key={mezmur.id} href={`/mezmurs/${mezmur.id}`} asChild>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    accessibilityLabel={mezmur.title}
-                    className="mb-4"
-                    style={{ width: '48%' }}>
-                    <Image
-                      source={item.imageUrl ? { uri: item.imageUrl } : undefined}
-                      className="h-35 w-full rounded-xl"
-                      resizeMode="cover"
-                      // style={{ aspectRatio: 1.55 }}
-                    />
-
-                    <Text
-                      numberOfLines={2}
-                      className="mt-2 text-center text-[14px] font-semibold"
-                      style={{
-                        color: theme.colors.ink,
-                      }}>
-                      {mezmur.title}
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              ))}
-            </View>
-          </View>
-        )}
-      </View>
+          )}
+        </View>
       </ScrollReveal>
     );
   };
 
   const renderMezmur = ({ item }: { item: (typeof mezmurs)[number] }) => (
     <ScrollReveal>
-    <Link href={`/mezmurs/${item.id}`} asChild>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel={item.title}
-        className="mb-3 flex-row items-center gap-3 rounded-2xl border p-3"
-        style={{
-          backgroundColor: theme.colors.white,
-          borderColor: theme.colors.border,
-        }}>
-        <Image
-          source={item.category.imageUrl ? { uri: item.category.imageUrl } : undefined}
-          className="h-16 w-16 rounded-xl"
-          resizeMode="cover"
-        />
-        <View className="flex-1">
-          <Text className="text-[16px] font-bold" style={{ color: theme.colors.ink }}>
-            {item.title}
-          </Text>
-          <Text className="mt-1 text-[13px]" style={{ color: theme.colors.muted }}>
-            {item.category.name}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
-      </TouchableOpacity>
-    </Link>
+      <Link href={`/mezmurs/${item.id}`} asChild>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={item.title}
+          className="mb-3 flex-row items-center gap-3 rounded-2xl border p-3"
+          style={{
+            backgroundColor: theme.colors.white,
+            borderColor: theme.colors.border,
+          }}>
+          <Image
+            source={item.category.imageUrl ? { uri: item.category.imageUrl } : undefined}
+            className="h-16 w-16 rounded-xl"
+            resizeMode="cover"
+          />
+          <View className="flex-1">
+            <Text className="text-[16px] font-bold" style={{ color: theme.colors.ink }}>
+              {item.title}
+            </Text>
+            <Text className="mt-1 text-[13px]" style={{ color: theme.colors.muted }}>
+              {item.category.name}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
+        </TouchableOpacity>
+      </Link>
     </ScrollReveal>
   );
 
