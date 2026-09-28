@@ -143,16 +143,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
             );
           })
         );
-        result.downloaded = downloadResults.filter((download) => download.status === 'fulfilled').length;
+        result.downloaded = downloadResults.filter(
+          (download) => download.status === 'fulfilled'
+        ).length;
         result.downloadFailed = downloadResults.length - result.downloaded;
-      } catch {
-        const isOffline = !mezmursRef.current.length;
-        const error = isOffline
-          ? 'ኢንተርኔት የለም፤ የተቀመጡ መዝሙሮችን ይመልከቱ'
+      } catch (error) {
+        const isOffline =
+          error instanceof TypeError ||
+          (error instanceof Error &&
+            /network request failed|failed to fetch|network error/i.test(error.message));
+        const errorMessage = isOffline
+          ? mezmursRef.current.length
+            ? 'ኢንተርኔት የለም፤ የተቀመጡ መዝሙሮችን ይመልከቱ'
+            : 'ኢንተርኔት የለም፤ የተቀመጠ መዝሙር የለም'
           : 'አዲስ መዝሙሮችን ማደስ አልተቻለም';
-        result.error = error;
+        result.error = errorMessage;
         if (mountedRef.current) {
-          setMezmurError(error);
+          setMezmurError(errorMessage);
         }
       }
 
@@ -196,20 +203,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       const mezmur = await fetchMezmurById(id);
-        detailCacheRef.current[id] = mezmur;
-        if (mountedRef.current) {
-          setMezmurDetails((current) => ({ ...current, [id]: mezmur }));
-        }
-        void AsyncStorage.setItem(`${MEZMUR_DETAIL_CACHE_KEY}${id}`, JSON.stringify(mezmur)).catch(
-          (error: unknown) => console.warn('Failed to cache Mezmur detail', error)
-        );
-        return mezmur;
+      detailCacheRef.current[id] = mezmur;
+      if (mountedRef.current) {
+        setMezmurDetails((current) => ({ ...current, [id]: mezmur }));
+      }
+      void AsyncStorage.setItem(`${MEZMUR_DETAIL_CACHE_KEY}${id}`, JSON.stringify(mezmur)).catch(
+        (error: unknown) => console.warn('Failed to cache Mezmur detail', error)
+      );
+      return mezmur;
     })().finally(() => {
-        if (mountedRef.current) {
-          setLoadingRequestCount((count) => Math.max(0, count - 1));
-        }
-        detailRequestsRef.current.delete(id);
-      });
+      if (mountedRef.current) {
+        setLoadingRequestCount((count) => Math.max(0, count - 1));
+      }
+      detailRequestsRef.current.delete(id);
+    });
 
     detailRequestsRef.current.set(id, detailRequest);
     return detailRequest;
