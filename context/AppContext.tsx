@@ -17,6 +17,14 @@ import { themes, type AppTheme, type ThemeId } from '../constants/theme';
 const MEZMURS_CACHE_KEY = '@fre-haymanot/mezmur-summaries-v2';
 const LEGACY_MEZMURS_CACHE_KEY = '@fre-haymanot/mezmurs';
 const CATEGORIES_CACHE_KEY = '@fre-haymanot/mezmur-categories';
+const MEZMUR_DETAIL_CACHE_KEY = '@fre-haymanot/mezmur-detail-';
+
+export interface MezmurRefreshResult {
+  added: number;
+  downloaded: number;
+  downloadFailed: number;
+  error: string | null;
+}
 
 interface AppContextValue {
   downloadedCourseIds: string[];
@@ -29,7 +37,7 @@ interface AppContextValue {
   mezmurCategories: MezmurCategory[];
   isMezmurLoading: boolean;
   mezmurError: string | null;
-  refreshMezmurs: () => Promise<void>;
+  refreshMezmurs: () => Promise<MezmurRefreshResult>;
   mezmurDetails: Record<number, Mezmur>;
   getMezmurById: (id: number) => Promise<Mezmur>;
   theme: AppTheme;
@@ -49,7 +57,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [mezmurDetails, setMezmurDetails] = useState<Record<number, Mezmur>>({});
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const mountedRef = useRef(true);
-  const refreshRequestRef = useRef<Promise<void> | null>(null);
+  const refreshRequestRef = useRef<Promise<MezmurRefreshResult> | null>(null);
+  const mezmursRef = useRef(mezmurs);
   const detailRequestsRef = useRef(new Map<number, Promise<Mezmur>>());
   const detailCacheRef = useRef<Record<number, Mezmur>>({});
   const isMezmurLoading = loadingRequestCount > 0;
@@ -64,6 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoadingRequestCount((count) => count + 1);
 
     const refreshRequest = (async () => {
+      let result: MezmurRefreshResult = { added: 0, downloaded: 0, downloadFailed: 0, error: null };
       const cachedDataRequest = Promise.all([
         AsyncStorage.getItem(MEZMURS_CACHE_KEY),
         AsyncStorage.getItem(LEGACY_MEZMURS_CACHE_KEY),
@@ -86,6 +96,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             updatedAt: mezmur.updatedAt,
             category: mezmur.category,
           }));
+          mezmursRef.current = summaries;
           setMezmurs(summaries);
 
           if (!cachedMezmurs) {
@@ -104,8 +115,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       try {
         const freshData = await freshDataRequest;
+        const knownIds = new Set(mezmursRef.current.map((mezmur) => mezmur.id));
+        const addedMezmurs = freshData.mezmurs.filter((mezmur) => !knownIds.has(mezmur.id));
+        result.added = addedMezmurs.length;
 
         if (mountedRef.current) {
+          mezmursRef.current = freshData.mezmurs;
           setMezmurs(freshData.mezmurs);
           setMezmurCategories(freshData.categories);
         }
@@ -114,11 +129,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
           AsyncStorage.setItem(MEZMURS_CACHE_KEY, JSON.stringify(freshData.mezmurs)),
           AsyncStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(freshData.categories)),
         ]).catch((error: unknown) => console.warn('Failed to cache Mezmur data', error));
+
+        const downloadResults = await Promise.allSettled(
+          addedMezmurs.map(async (summary) => {
+            const detail = await fetchMezmurById(summary.id);
+            detailCacheRef.current[summary.id] = detail;
+            if (mountedRef.current) {
+              setMezmurDetails((current) => ({ ...current, [summary.id]: detail }));
+            }
+            await AsyncStorage.setItem(
+              `${MEZMUR_DETAIL_CACHE_KEY}${summary.id}`,
+              JSON.stringify(detail)
+            );
+          })
+        );
+        result.downloaded = downloadResults.filter((download) => download.status === 'fulfilled').length;
+        result.downloadFailed = downloadResults.length - result.downloaded;
       } catch {
+        const isOffline = !mezmursRef.current.length;
+        const error = isOffline
+          ? 'ኢንተርኔት የለም፤ የተቀመጡ መዝሙሮችን ይመልከቱ'
+          : 'አዲስ መዝሙሮችን ማደስ አልተቻለም';
+        result.error = error;
         if (mountedRef.current) {
-          setMezmurError('ከኢንተርኔት መረጃ ማግኘት አልተቻለም');
+          setMezmurError(error);
         }
       }
+
+      return result;
     })().finally(() => {
       if (mountedRef.current) {
         setLoadingRequestCount((count) => Math.max(0, count - 1));
@@ -142,15 +180,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     setLoadingRequestCount((count) => count + 1);
-    const detailRequest = fetchMezmurById(id)
-      .then((mezmur) => {
+    const detailRequest = (async () => {
+      try {
+        const cachedDetail = await AsyncStorage.getItem(`${MEZMUR_DETAIL_CACHE_KEY}${id}`);
+        if (cachedDetail) {
+          const mezmur = JSON.parse(cachedDetail) as Mezmur;
+          detailCacheRef.current[id] = mezmur;
+          if (mountedRef.current) {
+            setMezmurDetails((current) => ({ ...current, [id]: mezmur }));
+          }
+          return mezmur;
+        }
+      } catch {
+        // A bad or unavailable cache should not prevent a network request.
+      }
+
+      const mezmur = await fetchMezmurById(id);
         detailCacheRef.current[id] = mezmur;
         if (mountedRef.current) {
           setMezmurDetails((current) => ({ ...current, [id]: mezmur }));
         }
+        void AsyncStorage.setItem(`${MEZMUR_DETAIL_CACHE_KEY}${id}`, JSON.stringify(mezmur)).catch(
+          (error: unknown) => console.warn('Failed to cache Mezmur detail', error)
+        );
         return mezmur;
-      })
-      .finally(() => {
+    })().finally(() => {
         if (mountedRef.current) {
           setLoadingRequestCount((count) => Math.max(0, count - 1));
         }

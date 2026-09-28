@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Alert, Animated, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,35 @@ type CategoryWithItems = MezmurCategory & {
 };
 
 type MezmurView = 'all' | 'categories';
+
+function ScrollReveal({ children }: { children: ReactNode }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: true,
+    }).start();
+  }, [opacity]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity,
+        transform: [
+          {
+            translateY: opacity.interpolate({
+              inputRange: [0, 1],
+              outputRange: [14, 0],
+            }),
+          },
+        ],
+      }}>
+      {children}
+    </Animated.View>
+  );
+}
 
 const Mezmurs = () => {
   const { theme, mezmurs, mezmurCategories, isMezmurLoading, mezmurError, refreshMezmurs } =
@@ -59,6 +88,24 @@ const Mezmurs = () => {
 
   const isInitialLoad = isMezmurLoading && mezmurs.length === 0;
 
+  const handleRefresh = async () => {
+    const result = await refreshMezmurs();
+
+    if (result.error) {
+      Alert.alert('የኢንተርኔት ችግር', result.error);
+      return;
+    }
+
+    const message = result.added === 0
+      ? 'አዲስ መዝሙር አልተገኘም፤ ዝርዝሩ ወቅታዊ ነው።'
+      : `${result.added} አዲስ መዝሙር ተጨምሯል። ${result.downloaded} ለኦፍላይን ተቀምጧል።`;
+    const downloadWarning = result.downloadFailed
+      ? `\n${result.downloadFailed} መዝሙር ማውረድ አልተቻለም፤ ኢንተርኔት ሲኖር እንደገና ያድሱ።`
+      : '';
+
+    Alert.alert('ዝርዝሩ ታድሷል', `${message}${downloadWarning}`);
+  };
+
   const toggleCategory = (categoryId: number) => {
     setExpandedIds((current) =>
       current.includes(categoryId)
@@ -71,6 +118,7 @@ const Mezmurs = () => {
     const expanded = expandedIds.includes(item.id);
 
     return (
+      <ScrollReveal>
       <View
         className="b-20 mb-4 overflow-hidden rounded-2xl"
         style={{
@@ -150,10 +198,12 @@ const Mezmurs = () => {
           </View>
         )}
       </View>
+      </ScrollReveal>
     );
   };
 
   const renderMezmur = ({ item }: { item: (typeof mezmurs)[number] }) => (
+    <ScrollReveal>
     <Link href={`/mezmurs/${item.id}`} asChild>
       <TouchableOpacity
         activeOpacity={0.8}
@@ -180,6 +230,7 @@ const Mezmurs = () => {
         <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
       </TouchableOpacity>
     </Link>
+    </ScrollReveal>
   );
 
   return (
@@ -191,6 +242,14 @@ const Mezmurs = () => {
         keyExtractor={(item) => String(item.id)}
         renderItem={view === 'all' ? renderMezmur : renderCategory}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isMezmurLoading}
+            onRefresh={() => void handleRefresh()}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+          />
+        }
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 12,
