@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
-  Alert,
   Animated,
   View,
   Text,
@@ -21,6 +20,7 @@ import {
 } from '../../data/mockAnnouncements';
 import { useApp } from '../../context/AppContext';
 import { PageHeader } from '../../components/PageHeader';
+import { FeedbackDialog, type FeedbackDialogState } from '../../components/FeedbackDialog';
 
 const ANNOUNCEMENT_SEEN_IDS_KEY = '@fre-haymanot/announcement-seen-ids-v1';
 const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
@@ -87,6 +87,7 @@ const Announcements = () => {
   const { theme } = useApp();
   const [announcementItems, setAnnouncementItems] = useState(announcements);
   const [refreshing, setRefreshing] = useState(false);
+  const [dialog, setDialog] = useState<FeedbackDialogState | null>(null);
   const [audienceFilter, setAudienceFilter] =
     useState<(typeof AUDIENCE_FILTERS)[number]['value']>('ALL');
   const visibleAnnouncements =
@@ -124,13 +125,18 @@ const Announcements = () => {
       );
 
       const summary = addedCount ? `${addedCount} አዲስ ማስታወቂያ ተጨምሯል።` : 'አዲስ ማስታወቂያ አልተገኘም።';
-      Alert.alert('ዝርዝሩ ታድሷል', `${summary}\nማስታወቂያዎቹ በዚህ መሣሪያ ላይ ይገኛሉ፤ ኢንተርኔት አያስፈልግም።`);
+      setDialog({
+        title: 'ዝርዝሩ ታድሷል',
+        message: `${summary}\nማስታወቂያዎቹ በዚህ መሣሪያ ላይ ይገኛሉ፤ ኢንተርኔት አያስፈልግም።`,
+        variant: 'success',
+      });
     } catch {
       setAnnouncementItems(announcements);
-      Alert.alert(
-        'ማስታወቂያዎቹ በዚህ መሣሪያ ላይ አሉ',
-        'ኢንተርኔት ሳያስፈልግ ማየት ይችላሉ፤ የአዲስ ማስታወቂያ ቁጥርን ማስቀመጥ ግን አልተቻለም።'
-      );
+      setDialog({
+        title: 'ማስታወቂያዎቹ በዚህ መሣሪያ ላይ አሉ',
+        message: 'ኢንተርኔት ሳያስፈልግ ማየት ይችላሉ፤ የአዲስ ማስታወቂያ ቁጥርን ማስቀመጥ ግን አልተቻለም።',
+        variant: 'error',
+      });
     } finally {
       setRefreshing(false);
     }
@@ -261,6 +267,7 @@ const Announcements = () => {
           </View>
         }
       />
+      <FeedbackDialog dialog={dialog} onClose={() => setDialog(null)} />
     </SafeAreaView>
   );
 };

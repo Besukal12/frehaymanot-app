@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  Alert,
   Animated,
   FlatList,
   Image,
@@ -18,6 +17,7 @@ import { PageHeader } from '../../../components/PageHeader';
 import { SearchField } from '../../../components/SearchField';
 import { EmptyState } from '../../../components/EmptyState';
 import { MezmurListSkeleton } from '../../../components/MezmurSkeleton';
+import { FeedbackDialog, type FeedbackDialogState } from '../../../components/FeedbackDialog';
 import type { MezmurCategory, MezmurSummary } from '../../../data/types';
 
 type CategoryWithItems = MezmurCategory & {
@@ -62,6 +62,7 @@ const Mezmurs = () => {
   const [query, setQuery] = useState('');
   const [view, setView] = useState<MezmurView>('categories');
   const [expandedIds, setExpandedIds] = useState<number[]>([1]);
+  const [dialog, setDialog] = useState<FeedbackDialogState | null>(null);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -101,7 +102,7 @@ const Mezmurs = () => {
     const result = await refreshMezmurs();
 
     if (result.error) {
-      Alert.alert('የኢንተርኔት ችግር', result.error);
+      setDialog({ title: 'የኢንተርኔት ችግር', message: result.error, variant: 'error' });
       return;
     }
 
@@ -113,7 +114,11 @@ const Mezmurs = () => {
       ? `\n${result.downloadFailed} መዝሙር ማውረድ አልተቻለም፤ ኢንተርኔት ሲኖር እንደገና ያድሱ።`
       : '';
 
-    Alert.alert('ዝርዝሩ ታድሷል', `${message}${downloadWarning}`);
+    setDialog({
+      title: 'ዝርዝሩ ታድሷል',
+      message: `${message}${downloadWarning}`,
+      variant: result.downloadFailed ? 'error' : 'success',
+    });
   };
 
   const toggleCategory = (categoryId: number) => {
@@ -338,6 +343,7 @@ const Mezmurs = () => {
           )
         }
       />
+      <FeedbackDialog dialog={dialog} onClose={() => setDialog(null)} />
     </SafeAreaView>
   );
 };

@@ -186,7 +186,7 @@ const Courses = () => {
         data={listData}
         keyExtractor={(item) => String(view === 'all' ? item.id : item.grade)}
         renderItem={view === 'all' ? renderCourse : renderGrade}
-        contentContainerClassName="px-4 pb-8"
+        contentContainerClassName="px-4 pb-20"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
