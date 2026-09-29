@@ -26,11 +26,7 @@ export interface MezmurSummary {
   id: number;
   title: string;
   description: string | null;
-<<<<<<< HEAD
   poemFirstLine?: string;
-=======
-  poemFirstLine: string;
->>>>>>> 566e7f670b96fcae02fea213c54a4eb8a6f17581
   categoryId: number;
   createdAt: string;
   updatedAt: string;

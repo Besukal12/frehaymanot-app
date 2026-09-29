@@ -132,7 +132,8 @@ const MezmurPreview = () => {
   const backgroundImage = mezmur.category.imageUrl ? { uri: mezmur.category.imageUrl } : undefined;
 
   const fadeStart = SCREEN_HEIGHT * 0.18;
-  const darkTheme = isDarkColor(theme.colors.primary);
+  const darkTheme = isDarkColor(theme.colors.background);
+  const gradientColor = darkTheme ? '#15131D' : theme.colors.primary;
   const overlayText = darkTheme ? '#FFFFFF' : theme.colors.ink;
   const overlayMutedText = darkTheme ? withAlpha('#FFFFFF', 0.76) : theme.colors.muted;
   const controlBackground = darkTheme
@@ -159,10 +160,10 @@ const MezmurPreview = () => {
           pointerEvents="none"
           colors={[
             'transparent',
-            withAlpha(theme.colors.primary, 0.16),
-            withAlpha(theme.colors.primary, 0.68),
-            withAlpha(theme.colors.primary, 0.94),
-            theme.colors.primary,
+            withAlpha(gradientColor, 0.16),
+            withAlpha(gradientColor, 0.68),
+            withAlpha(gradientColor, 0.94),
+            gradientColor,
           ]}
           locations={[0, 0.2, 0.48, 0.72, 1]}
           style={{
@@ -199,7 +200,7 @@ const MezmurPreview = () => {
               paddingTop: 32,
               paddingBottom: 80,
             }}>
-            <View className="w-fullflex items-center justify-center mt-[50%]">
+            <View className="mt-[50%] flex w-full items-center justify-center">
               <Text
                 className="mb-3 text-left text-[14px] font-semibold"
                 style={{
