@@ -92,6 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             id: mezmur.id,
             title: mezmur.title,
             description: mezmur.description,
+            poemFirstLine: mezmur.poemFirstLine ?? '',
             categoryId: mezmur.categoryId,
             createdAt: mezmur.createdAt,
             updatedAt: mezmur.updatedAt,
