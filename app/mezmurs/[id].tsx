@@ -134,8 +134,8 @@ const MezmurPreview = () => {
   const fadeStart = SCREEN_HEIGHT * 0.18;
   const darkTheme = isDarkColor(theme.colors.background);
   const gradientColor = darkTheme ? '#15131D' : theme.colors.primary;
-  const overlayText = darkTheme ? '#FFFFFF' : theme.colors.ink;
-  const overlayMutedText = darkTheme ? withAlpha('#FFFFFF', 0.76) : theme.colors.muted;
+  const overlayText = darkTheme ? '#FFFFFF' : theme.colors.white;
+  const overlayMutedText = darkTheme ? withAlpha('#FFFFFF', 0) : theme.colors.muted;
   const controlBackground = darkTheme
     ? withAlpha('#FFFFFF', 0.14)
     : withAlpha(theme.colors.primary, 0.12);
@@ -213,10 +213,8 @@ const MezmurPreview = () => {
                 style={{
                   color: overlayText,
                   textShadowColor: darkTheme
-                    ? withAlpha('#000000', 0.7)
-                    : withAlpha(theme.colors.white, 0.9),
-                  textShadowOffset: { width: 1, height: 1 },
-                  textShadowRadius: 4,
+                    ? withAlpha('#000000', 0)
+                    : withAlpha(theme.colors.white, 0),
                 }}>
                 {mezmur.title}
               </Text>
@@ -228,13 +226,8 @@ const MezmurPreview = () => {
                     color: overlayText,
 
                     textShadowColor: darkTheme
-                      ? withAlpha('#000000', 0.8)
-                      : withAlpha(theme.colors.white, 0.9),
-                    textShadowOffset: {
-                      width: 1,
-                      height: 2,
-                    },
-                    textShadowRadius: 5,
+                      ? withAlpha('#000000',0)
+                      : withAlpha(theme.colors.white,0),
                   }}>
                   {mezmur.mezmurPoem}
                 </Text>
