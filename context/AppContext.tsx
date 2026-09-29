@@ -74,16 +74,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const refreshRequest = (async () => {
       let result: MezmurRefreshResult = { added: 0, downloaded: 0, downloadFailed: 0, error: null };
-      const cachedDataRequest = AsyncStorage.multiGet([
-        MEZMURS_CACHE_KEY,
-        LEGACY_MEZMURS_CACHE_KEY,
-        CATEGORIES_CACHE_KEY,
-      ]);
       const freshDataRequest = fetchMezmurData();
 
       try {
-        const [[, cachedMezmurs], [, legacyMezmurs], [, cachedCategories]] =
-          await cachedDataRequest;
+        const [cachedMezmurs, legacyMezmurs, cachedCategories] = await Promise.all([
+          AsyncStorage.getItem(MEZMURS_CACHE_KEY),
+          AsyncStorage.getItem(LEGACY_MEZMURS_CACHE_KEY),
+          AsyncStorage.getItem(CATEGORIES_CACHE_KEY),
+        ]);
 
         const storedMezmurs = cachedMezmurs ?? legacyMezmurs;
         if (mountedRef.current && storedMezmurs) {

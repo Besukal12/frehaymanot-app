@@ -34,7 +34,6 @@ const AUDIENCE_FILTERS = [
   { value: 'YOUTH', label: AUDIENCE_LABELS.YOUTH },
   { value: 'CENTRAL', label: AUDIENCE_LABELS.CENTRAL },
   { value: 'CHILDREN', label: AUDIENCE_LABELS.CHILDREN },
-  { value: 'EVERYONE', label: AUDIENCE_LABELS.EVERYONE },
 ] as const;
 
 function ScrollReveal({ children }: { children: ReactNode }) {
