@@ -233,8 +233,11 @@ const Mezmurs = () => {
             <Text className="text-[16px] font-bold" style={{ color: theme.colors.ink }}>
               {item.title}
             </Text>
-            <Text className="mt-1 text-[13px]" style={{ color: theme.colors.muted }}>
-              {item.category.name}
+            <Text
+              numberOfLines={1}
+              className="mt-1 text-[13px]"
+              style={{ color: theme.colors.muted }}>
+              {item.poemFirstLine}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
