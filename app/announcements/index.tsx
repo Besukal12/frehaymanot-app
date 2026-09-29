@@ -34,6 +34,7 @@ const AUDIENCE_FILTERS = [
   { value: 'YOUTH', label: AUDIENCE_LABELS.YOUTH },
   { value: 'CENTRAL', label: AUDIENCE_LABELS.CENTRAL },
   { value: 'CHILDREN', label: AUDIENCE_LABELS.CHILDREN },
+  { value: 'EVERYONE', label: AUDIENCE_LABELS.EVERYONE },
 ] as const;
 
 function ScrollReveal({ children }: { children: ReactNode }) {
@@ -166,23 +167,25 @@ const Announcements = () => {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8, paddingVertical: 12 }}>
+              className="mt-4 mb-6 rounded-xl"
+              contentContainerStyle={{ gap: 4, padding: 4 }}
+              style={{ backgroundColor: theme.colors.white }}>
               {AUDIENCE_FILTERS.map((filter) => {
                 const selected = audienceFilter === filter.value;
                 return (
                   <TouchableOpacity
                     key={filter.value}
                     onPress={() => setAudienceFilter(filter.value)}
+                    activeOpacity={0.8}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
-                    className="rounded-full border px-3 py-2"
+                    className="items-center rounded-lg px-3 py-2.5"
                     style={{
                       backgroundColor: selected ? theme.colors.primary : theme.colors.white,
-                      borderColor: selected ? theme.colors.primary : theme.colors.border,
                     }}>
                     <Text
                       className="text-[13px] font-semibold"
-                      style={{ color: selected ? theme.colors.white : theme.colors.ink }}>
+                      style={{ color: selected ? theme.colors.white : theme.colors.muted }}>
                       {filter.label}
                     </Text>
                   </TouchableOpacity>
