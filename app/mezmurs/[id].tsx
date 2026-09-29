@@ -135,7 +135,7 @@ const MezmurPreview = () => {
   const darkTheme = isDarkColor(theme.colors.background);
   const gradientColor = darkTheme ? '#15131D' : theme.colors.primary;
   const overlayText = darkTheme ? '#FFFFFF' : theme.colors.white;
-  const overlayMutedText = darkTheme ? withAlpha('#FFFFFF', 0) : theme.colors.muted;
+  const overlayMutedText = darkTheme ? withAlpha('#FFFFFF', 0.76) : theme.colors.muted;
   const controlBackground = darkTheme
     ? withAlpha('#FFFFFF', 0.14)
     : withAlpha(theme.colors.primary, 0.12);
@@ -160,7 +160,7 @@ const MezmurPreview = () => {
           pointerEvents="none"
           colors={[
             'transparent',
-            withAlpha(gradientColor, 0.16),
+            withAlpha(gradientColor, 0.68),
             withAlpha(gradientColor, 0.68),
             withAlpha(gradientColor, 0.94),
             gradientColor,
@@ -226,8 +226,8 @@ const MezmurPreview = () => {
                     color: overlayText,
 
                     textShadowColor: darkTheme
-                      ? withAlpha('#000000',0)
-                      : withAlpha(theme.colors.white,0),
+                      ? withAlpha('#000000', 0)
+                      : withAlpha(theme.colors.white, 0),
                   }}>
                   {mezmur.mezmurPoem}
                 </Text>
