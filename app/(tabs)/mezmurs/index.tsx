@@ -218,7 +218,7 @@ const Mezmurs = () => {
         <TouchableOpacity
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel={item.title}
+          accessibilityLabel={`${item.title}${item.poemFirstLine ? `. ${item.poemFirstLine}` : ''}`}
           className="mb-3 flex-row items-center gap-3 rounded-2xl border p-3"
           style={{
             backgroundColor: theme.colors.white,

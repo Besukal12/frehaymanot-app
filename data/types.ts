@@ -26,6 +26,7 @@ export interface MezmurSummary {
   id: number;
   title: string;
   description: string | null;
+  poemFirstLine?: string;
   categoryId: number;
   createdAt: string;
   updatedAt: string;
