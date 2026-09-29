@@ -199,44 +199,45 @@ const MezmurPreview = () => {
               paddingTop: 32,
               paddingBottom: 80,
             }}>
-            <Text
-              className="mb-3 text-left text-[14px] font-semibold"
-              style={{
-                color: overlayMutedText,
-              }}>
-              {mezmur.category.name}
-            </Text>
-
-            <Text
-              className="mb-6 text-left text-[24px] font-black"
-              style={{
-                color: overlayText,
-                textShadowColor: darkTheme
-                  ? withAlpha('#000000', 0.7)
-                  : withAlpha(theme.colors.white, 0.9),
-                textShadowOffset: { width: 1, height: 1 },
-                textShadowRadius: 4,
-              }}>
-              {mezmur.title}
-            </Text>
-
-            <View className="px-1">
+            <View className="w-fullflex items-center justify-center mt-[50%]">
               <Text
-                className="text-left text-[20px] leading-[34px] font-semibold"
+                className="mb-3 text-left text-[14px] font-semibold"
+                style={{
+                  color: overlayMutedText,
+                }}>
+                {mezmur.category.name}
+              </Text>
+              <Text
+                className="mb-6 text-left text-[24px] font-black"
                 style={{
                   color: overlayText,
-
                   textShadowColor: darkTheme
-                    ? withAlpha('#000000', 0.8)
+                    ? withAlpha('#000000', 0.7)
                     : withAlpha(theme.colors.white, 0.9),
-                  textShadowOffset: {
-                    width: 1,
-                    height: 2,
-                  },
-                  textShadowRadius: 5,
+                  textShadowOffset: { width: 1, height: 1 },
+                  textShadowRadius: 4,
                 }}>
-                {mezmur.mezmurPoem}
+                {mezmur.title}
               </Text>
+
+              <View className="px-1">
+                <Text
+                  className="text-left text-[20px]"
+                  style={{
+                    color: overlayText,
+
+                    textShadowColor: darkTheme
+                      ? withAlpha('#000000', 0.8)
+                      : withAlpha(theme.colors.white, 0.9),
+                    textShadowOffset: {
+                      width: 1,
+                      height: 2,
+                    },
+                    textShadowRadius: 5,
+                  }}>
+                  {mezmur.mezmurPoem}
+                </Text>
+              </View>
             </View>
 
             {/* DESCRIPTION */}
