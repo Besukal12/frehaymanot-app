@@ -322,8 +322,8 @@ const Mezmurs = () => {
               {(
                 [
                   ['all', 'ሁሉም'],
-                  ['favorites', 'የተወደዱ'],
                   ['categories', 'ምድቦች'],
+                  ['favorites', 'የተወደዱ'],
                 ] as const
               ).map(([value, label]) => {
                 const selected = view === value;
