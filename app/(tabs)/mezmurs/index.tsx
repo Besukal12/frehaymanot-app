@@ -24,7 +24,7 @@ type CategoryWithItems = MezmurCategory & {
   items: MezmurSummary[];
 };
 
-type MezmurView = 'all' | 'categories';
+type MezmurView = 'all' | 'favorites' | 'categories';
 
 function ScrollReveal({ children }: { children: ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -56,8 +56,16 @@ function ScrollReveal({ children }: { children: ReactNode }) {
 }
 
 const Mezmurs = () => {
-  const { theme, mezmurs, mezmurCategories, isMezmurLoading, mezmurError, refreshMezmurs } =
-    useApp();
+  const {
+    theme,
+    mezmurs,
+    mezmurCategories,
+    isMezmurLoading,
+    mezmurError,
+    refreshMezmurs,
+    favoriteMezmurIds,
+    toggleFavoriteMezmur,
+  } = useApp();
 
   const [query, setQuery] = useState('');
   const [view, setView] = useState<MezmurView>('categories');
@@ -95,6 +103,10 @@ const Mezmurs = () => {
       ),
     [mezmurs, normalizedQuery]
   );
+  const visibleMezmurs =
+    view === 'favorites'
+      ? filteredMezmurs.filter((mezmur) => favoriteMezmurIds.includes(mezmur.id))
+      : filteredMezmurs;
 
   const isInitialLoad = isMezmurLoading && mezmurs.length === 0;
 
@@ -219,35 +231,51 @@ const Mezmurs = () => {
 
   const renderMezmur = ({ item }: { item: (typeof mezmurs)[number] }) => (
     <ScrollReveal>
-      <Link href={`/mezmurs/${item.id}`} asChild>
+      <View
+        className="mb-3 flex-row items-center gap-3 rounded-2xl border p-3"
+        style={{
+          backgroundColor: theme.colors.white,
+          borderColor: theme.colors.border,
+        }}>
+        <Link href={`/mezmurs/${item.id}`} asChild>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.title}${item.poemFirstLine ? `. ${item.poemFirstLine}` : ''}`}
+            className="flex-1 flex-row items-center gap-3">
+            <Image
+              source={item.category.imageUrl ? { uri: item.category.imageUrl } : undefined}
+              className="h-16 w-16 rounded-xl"
+              resizeMode="cover"
+            />
+            <View className="flex-1">
+              <Text className="text-[16px] font-bold" style={{ color: theme.colors.ink }}>
+                {item.title}
+              </Text>
+              <Text
+                numberOfLines={1}
+                className="mt-1 text-[13px]"
+                style={{ color: theme.colors.muted }}>
+                {item.poemFirstLine}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </Link>
         <TouchableOpacity
-          activeOpacity={0.8}
+          onPress={() => toggleFavoriteMezmur(item.id)}
+          activeOpacity={0.75}
           accessibilityRole="button"
-          accessibilityLabel={`${item.title}${item.poemFirstLine ? `. ${item.poemFirstLine}` : ''}`}
-          className="mb-3 flex-row items-center gap-3 rounded-2xl border p-3"
-          style={{
-            backgroundColor: theme.colors.white,
-            borderColor: theme.colors.border,
-          }}>
-          <Image
-            source={item.category.imageUrl ? { uri: item.category.imageUrl } : undefined}
-            className="h-16 w-16 rounded-xl"
-            resizeMode="cover"
+          accessibilityLabel={favoriteMezmurIds.includes(item.id) ? 'ከተወደዱ አስወግድ' : 'ወደ ተወዳጆች ጨምር'}
+          accessibilityState={{ selected: favoriteMezmurIds.includes(item.id) }}
+          className="h-10 w-10 items-center justify-center rounded-full"
+          style={{ backgroundColor: theme.colors.background }}>
+          <Ionicons
+            name={favoriteMezmurIds.includes(item.id) ? 'heart' : 'heart-outline'}
+            size={21}
+            color={favoriteMezmurIds.includes(item.id) ? theme.colors.accent : theme.colors.muted}
           />
-          <View className="flex-1">
-            <Text className="text-[16px] font-bold" style={{ color: theme.colors.ink }}>
-              {item.title}
-            </Text>
-            <Text
-              numberOfLines={1}
-              className="mt-1 text-[13px]"
-              style={{ color: theme.colors.muted }}>
-              {item.poemFirstLine}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
         </TouchableOpacity>
-      </Link>
+      </View>
     </ScrollReveal>
   );
 
@@ -256,9 +284,9 @@ const Mezmurs = () => {
       className="bg-background flex-1"
       style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <FlatList<any>
-        data={view === 'all' ? filteredMezmurs : categories}
+        data={view === 'categories' ? categories : visibleMezmurs}
         keyExtractor={(item) => String(item.id)}
-        renderItem={view === 'all' ? renderMezmur : renderCategory}
+        renderItem={view === 'categories' ? renderCategory : renderMezmur}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -293,7 +321,8 @@ const Mezmurs = () => {
               style={{ backgroundColor: theme.colors.white }}>
               {(
                 [
-                  ['all', 'ሁሉም መዝሙሮች'],
+                  ['all', 'ሁሉም'],
+                  ['favorites', 'የተወደዱ'],
                   ['categories', 'ምድቦች'],
                 ] as const
               ).map(([value, label]) => {
@@ -328,7 +357,12 @@ const Mezmurs = () => {
             <MezmurListSkeleton />
           ) : (
             <View className="items-center">
-              <EmptyState icon="musical-notes-outline" message={mezmurError ?? 'ምንም መዝሙር አልተገኘም'} />
+              <EmptyState
+                icon={view === 'favorites' ? 'heart-outline' : 'musical-notes-outline'}
+                message={
+                  mezmurError ?? (view === 'favorites' ? 'የተወደደ መዝሙር የለም' : 'ምንም መዝሙር አልተገኘም')
+                }
+              />
               {mezmurError ? (
                 <TouchableOpacity
                   onPress={() => void refreshMezmurs()}

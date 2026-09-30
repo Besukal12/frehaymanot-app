@@ -18,6 +18,8 @@ const MEZMURS_CACHE_KEY = '@fre-haymanot/mezmur-summaries-v2';
 const LEGACY_MEZMURS_CACHE_KEY = '@fre-haymanot/mezmurs';
 const CATEGORIES_CACHE_KEY = '@fre-haymanot/mezmur-categories';
 const MEZMUR_DETAIL_CACHE_KEY = '@fre-haymanot/mezmur-detail-';
+const FAVORITE_MEZMURS_KEY = '@fre-haymanot/favorite-mezmurs';
+const THEME_KEY = '@fre-haymanot/theme';
 
 export interface MezmurRefreshResult {
   added: number;
@@ -40,6 +42,8 @@ interface AppContextValue {
   refreshMezmurs: () => Promise<MezmurRefreshResult>;
   mezmurDetails: Record<number, Mezmur>;
   getMezmurById: (id: number) => Promise<Mezmur>;
+  favoriteMezmurIds: number[];
+  toggleFavoriteMezmur: (id: number) => void;
   theme: AppTheme;
   themeId: ThemeId;
   setTheme: (themeId: ThemeId) => void;
@@ -55,7 +59,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loadingRequestCount, setLoadingRequestCount] = useState(0);
   const [mezmurError, setMezmurError] = useState<string | null>(null);
   const [mezmurDetails, setMezmurDetails] = useState<Record<number, Mezmur>>({});
+  const [favoriteMezmurIds, setFavoriteMezmurIds] = useState<number[]>([]);
   const [themeId, setThemeId] = useState<ThemeId>('default');
+  const favoriteMezmurIdsRef = useRef<number[]>([]);
+  const favoritesChangedRef = useRef(false);
+  const themeChangedRef = useRef(false);
   const mountedRef = useRef(true);
   const refreshRequestRef = useRef<Promise<MezmurRefreshResult> | null>(null);
   const mezmursRef = useRef(mezmurs);
@@ -230,6 +238,65 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [refreshMezmurs]);
 
+  useEffect(() => {
+    let active = true;
+
+    void Promise.all([AsyncStorage.getItem(FAVORITE_MEZMURS_KEY), AsyncStorage.getItem(THEME_KEY)])
+      .then(([storedFavorites, storedTheme]) => {
+        if (!active) {
+          return;
+        }
+
+        if (storedFavorites && !favoritesChangedRef.current) {
+          try {
+            const parsedFavorites: unknown = JSON.parse(storedFavorites);
+            if (Array.isArray(parsedFavorites)) {
+              const favoriteIds = parsedFavorites.filter(
+                (id): id is number => Number.isInteger(id) && id > 0
+              );
+              favoriteMezmurIdsRef.current = favoriteIds;
+              setFavoriteMezmurIds(favoriteIds);
+            }
+          } catch {
+            // A bad cache should not prevent the app from loading.
+          }
+        }
+
+        if (
+          storedTheme &&
+          !themeChangedRef.current &&
+          themes.some((item) => item.id === storedTheme)
+        ) {
+          setThemeId(storedTheme as ThemeId);
+        }
+      })
+      .catch((error: unknown) => console.warn('Failed to load app preferences', error));
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function toggleFavoriteMezmur(id: number) {
+    favoritesChangedRef.current = true;
+    const favoriteIds = favoriteMezmurIdsRef.current.includes(id)
+      ? favoriteMezmurIdsRef.current.filter((favoriteId) => favoriteId !== id)
+      : [...favoriteMezmurIdsRef.current, id];
+    favoriteMezmurIdsRef.current = favoriteIds;
+    setFavoriteMezmurIds(favoriteIds);
+    void AsyncStorage.setItem(FAVORITE_MEZMURS_KEY, JSON.stringify(favoriteIds)).catch(
+      (error: unknown) => console.warn('Failed to save favorite Mezmurs', error)
+    );
+  }
+
+  function setTheme(nextThemeId: ThemeId) {
+    themeChangedRef.current = true;
+    setThemeId(nextThemeId);
+    void AsyncStorage.setItem(THEME_KEY, nextThemeId).catch((error: unknown) =>
+      console.warn('Failed to save app theme', error)
+    );
+  }
+
   function toggleDownload(courseId: string) {
     setDownloadedCourseIds(
       (current) =>
@@ -261,9 +328,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshMezmurs,
     mezmurDetails,
     getMezmurById,
+    favoriteMezmurIds,
+    toggleFavoriteMezmur,
     theme,
     themeId,
-    setTheme: setThemeId,
+    setTheme,
   };
 
   return (
