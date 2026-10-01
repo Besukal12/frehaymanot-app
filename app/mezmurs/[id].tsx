@@ -11,12 +11,16 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSharedValue } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 
 import { useApp } from '../../context/AppContext';
 import { MezmurDetailSkeleton } from '../../components/MezmurSkeleton';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const MIN_TEXT_SCALE = 0.8;
+const MAX_TEXT_SCALE = 2;
 
 function withAlpha(hex: string, alpha: number) {
   const normalized = hex.replace('#', '');
@@ -52,6 +56,9 @@ const MezmurPreview = () => {
   const { theme, mezmurDetails, getMezmurById } = useApp();
   const [failedId, setFailedId] = useState<number | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [textScale, setTextScale] = useState(1);
+  const pinchStartScale = useSharedValue(1);
+  const currentTextScale = useSharedValue(1);
   const mezmurId = Number(id);
   const mezmur = mezmurDetails[mezmurId];
   const hasValidId = Number.isInteger(mezmurId) && mezmurId > 0;
@@ -82,6 +89,21 @@ const MezmurPreview = () => {
       active = false;
     };
   }, [getMezmurById, hasValidId, mezmurId, retryCount]);
+
+  const pinchGesture = Gesture.Pinch()
+    .runOnJS(true)
+    .onBegin(() => {
+      pinchStartScale.value = currentTextScale.value;
+    })
+    .onUpdate((event) => {
+      const scale = Math.min(
+        MAX_TEXT_SCALE,
+        Math.max(MIN_TEXT_SCALE, pinchStartScale.value * event.scale)
+      );
+      const roundedScale = Number(scale.toFixed(2));
+      currentTextScale.value = roundedScale;
+      setTextScale(roundedScale);
+    });
 
   if (isDetailLoading && !mezmur) {
     return <MezmurDetailSkeleton />;
@@ -200,50 +222,56 @@ const MezmurPreview = () => {
               paddingTop: 32,
               paddingBottom: 80,
             }}>
-            <View className="mt-[50%] flex w-full items-center justify-center">
-              <Text
-                className="mb-3 text-left text-[14px] font-semibold"
-                style={{
-                  color: overlayMutedText,
-                }}>
-                {mezmur.category.name}
-              </Text>
-              <Text
-                className="mb-6 text-left text-[24px] font-black"
-                style={{
-                  color: overlayText,
-                  textShadowColor: darkTheme
-                    ? withAlpha('#000000', 0)
-                    : withAlpha(theme.colors.white, 0),
-                }}>
-                {mezmur.title}
-              </Text>
+            <GestureDetector gesture={pinchGesture}>
+              <View>
+                <View className="mt-[50%] flex w-full items-center justify-center">
+                  <Text
+                    className="mb-3 text-left text-[14px] font-semibold"
+                    style={{
+                      color: overlayMutedText,
+                    }}>
+                    {mezmur.category.name}
+                  </Text>
+                  <Text
+                    className="mb-6 text-left text-[24px] font-black"
+                    style={{
+                      color: overlayText,
+                      textShadowColor: darkTheme
+                        ? withAlpha('#000000', 0)
+                        : withAlpha(theme.colors.white, 0),
+                    }}>
+                    {mezmur.title}
+                  </Text>
 
-              <View className="px-1">
-                <Text
-                  className="text-left text-[20px]"
-                  style={{
-                    color: overlayText,
+                  <View className="w-full px-1">
+                    <Text
+                      className="text-left"
+                      style={{
+                        color: overlayText,
+                        fontSize: 20 * textScale,
+                        lineHeight: 34 * textScale,
+                        textShadowColor: darkTheme
+                          ? withAlpha('#000000', 0)
+                          : withAlpha(theme.colors.white, 0),
+                      }}>
+                      {mezmur.mezmurPoem}
+                    </Text>
+                  </View>
+                </View>
 
-                    textShadowColor: darkTheme
-                      ? withAlpha('#000000', 0)
-                      : withAlpha(theme.colors.white, 0),
-                  }}>
-                  {mezmur.mezmurPoem}
-                </Text>
+                {mezmur.description ? (
+                  <Text
+                    className="mt-10 text-left"
+                    style={{
+                      color: darkTheme ? withAlpha('#FFFFFF', 0.64) : theme.colors.muted,
+                      fontSize: 14 * textScale,
+                      lineHeight: 24 * textScale,
+                    }}>
+                    {mezmur.description}
+                  </Text>
+                ) : null}
               </View>
-            </View>
-
-            {/* DESCRIPTION */}
-            {mezmur.description ? (
-              <Text
-                className="mt-10 text-left text-[14px] leading-6"
-                style={{
-                  color: darkTheme ? withAlpha('#FFFFFF', 0.64) : theme.colors.muted,
-                }}>
-                {mezmur.description}
-              </Text>
-            ) : null}
+            </GestureDetector>
           </ScrollView>
         </SafeAreaView>
       </ImageBackground>

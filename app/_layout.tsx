@@ -1,6 +1,7 @@
 import '../global.css';
 import { ActivityIndicator, View } from 'react-native';
 import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from '../context/AppContext';
 
@@ -37,13 +38,15 @@ function BackgroundMezmurIndicator() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AppProvider>
-        <View className="flex-1">
-          <Stack screenOptions={{ headerShown: false, contentStyle: { flex: 1 } }} />
-          <BackgroundMezmurIndicator />
-        </View>
-      </AppProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AppProvider>
+          <View className="flex-1">
+            <Stack screenOptions={{ headerShown: false, contentStyle: { flex: 1 } }} />
+            <BackgroundMezmurIndicator />
+          </View>
+        </AppProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
