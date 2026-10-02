@@ -2,7 +2,10 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { announcements } from '../../data/mockAnnouncements';
+import { useEffect, useState } from 'react';
+import { fetchAnnouncementById, fetchAnnouncements } from '../../data/api';
+import type { Announcement } from '../../data/types';
+import { ScreenLoader } from '../../components/ScreenLoader';
 import { colors } from '../../constants/theme';
 import { useApp } from '../../context/AppContext';
 
@@ -26,14 +29,59 @@ const formatRelativeDate = (isoDate: string) => {
 const AnnouncementDetail = () => {
   const { theme } = useApp();
   const { slug } = useLocalSearchParams<{ slug?: string | string[] }>();
-  const announcementSlug = Array.isArray(slug) ? slug[0] : slug;
-  const announcement = announcements.find((item) => item.slug === announcementSlug);
-  const latestAnnouncements = announcements
-    .filter((item) => item.slug !== announcementSlug)
-    .sort((first, second) => Date.parse(second.postedAt) - Date.parse(first.postedAt))
-    .slice(0, 3);
+  const announcementId = Array.isArray(slug) ? slug[0] : slug;
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
+  const [latestAnnouncements, setLatestAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  if (!announcement) {
+  useEffect(() => {
+    let active = true;
+    const id = Number(announcementId);
+
+    const loadAnnouncement = async () => {
+      if (!Number.isInteger(id) || id <= 0) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const [fetchedAnnouncement, fetchedAnnouncements] = await Promise.all([
+          fetchAnnouncementById(id),
+          fetchAnnouncements(),
+        ]);
+        if (!active) return;
+
+        setAnnouncement(fetchedAnnouncement);
+        setLatestAnnouncements(
+          fetchedAnnouncements
+            .filter((item) => item.id !== id)
+            .sort((first, second) => Date.parse(second.postedAt) - Date.parse(first.postedAt))
+            .slice(0, 3)
+        );
+      } catch (error) {
+        console.error('Failed to load announcement', error);
+        if (active) setLoadError(true);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void loadAnnouncement();
+    return () => {
+      active = false;
+    };
+  }, [announcementId]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <ScreenLoader />
+      </SafeAreaView>
+    );
+  }
+
+  if (loadError || !announcement) {
     return (
       <SafeAreaView
         className="bg-background flex-1"
@@ -43,10 +91,12 @@ const AnnouncementDetail = () => {
             <Ionicons name="megaphone-outline" size={30} color={theme.colors.accent} />
           </View>
           <Text className="text-primary mt-5 text-center text-[22px] font-black">
-            ማስታወቂያው አልተገኘም
+            {loadError ? 'ማስታወቂያውን መጫን አልተቻለም' : 'ማስታወቂያው አልተገኘም'}
           </Text>
           <Text className="text-muted mt-2 text-center text-[14px] leading-5">
-            የጠየቁት ማስታወቂያ አልተገኘም።
+            {loadError
+              ? 'የኢንተርኔት ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።'
+              : 'የጠየቁት ማስታወቂያ አልተገኘም።'}
           </Text>
           <TouchableOpacity
             activeOpacity={0.8}
@@ -118,7 +168,7 @@ const AnnouncementDetail = () => {
 
           {latestAnnouncements.length > 0 ? (
             latestAnnouncements.map((item) => (
-              <Link key={item.id} href={`/announcements/${item.slug}`} asChild>
+              <Link key={item.id} href={`/announcements/${item.id}`} asChild>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   accessibilityRole="button"

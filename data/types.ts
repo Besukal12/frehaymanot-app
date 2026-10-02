@@ -4,6 +4,20 @@ export interface FeedbackItem {
   createdAt: string;
 }
 
+export type AnnouncementAudience = 'YOUTH' | 'CENTRAL' | 'CHILDREN' | 'EVERYONE';
+
+export interface Announcement {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  audience: AnnouncementAudience;
+  thumbnailUrl: string | null;
+  postedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MezmurCategory {
   id: number;
   name: string;
