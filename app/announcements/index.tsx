@@ -13,11 +13,8 @@ import {
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  announcements,
-  type AnnouncementAudience,
-  type MockAnnouncement,
-} from '../../data/mockAnnouncements';
+import { fetchAnnouncements } from '../../data/api';
+import type { Announcement, AnnouncementAudience } from '../../data/types';
 import { useApp } from '../../context/AppContext';
 import { PageHeader } from '../../components/PageHeader';
 import { FeedbackDialog, type FeedbackDialogState } from '../../components/FeedbackDialog';
@@ -85,8 +82,9 @@ const formatRelativeDate = (isoDate: string) => {
 
 const Announcements = () => {
   const { theme } = useApp();
-  const [announcementItems, setAnnouncementItems] = useState(announcements);
+  const [announcementItems, setAnnouncementItems] = useState<Announcement[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [dialog, setDialog] = useState<FeedbackDialogState | null>(null);
   const [audienceFilter, setAudienceFilter] =
     useState<(typeof AUDIENCE_FILTERS)[number]['value']>('ALL');
@@ -96,45 +94,64 @@ const Announcements = () => {
       : announcementItems.filter((item) => item.audience === audienceFilter);
 
   useEffect(() => {
-    void AsyncStorage.getItem(ANNOUNCEMENT_SEEN_IDS_KEY)
-      .then((storedIds) => {
-        if (!storedIds) {
-          return AsyncStorage.setItem(
+    let active = true;
+
+    const loadAnnouncements = async () => {
+      try {
+        const fetchedAnnouncements = await fetchAnnouncements();
+        if (!active) return;
+
+        setAnnouncementItems(fetchedAnnouncements);
+        setLoadError(false);
+        const storedIds = await AsyncStorage.getItem(ANNOUNCEMENT_SEEN_IDS_KEY);
+        if (active && !storedIds) {
+          await AsyncStorage.setItem(
             ANNOUNCEMENT_SEEN_IDS_KEY,
-            JSON.stringify(announcements.map((item) => item.id))
+            JSON.stringify(fetchedAnnouncements.map((item) => item.id))
           );
         }
-      })
-      .catch((error: unknown) => console.warn('Failed to load announcement history', error));
+      } catch (error) {
+        console.error('Failed to load announcements', error);
+        if (active) setLoadError(true);
+      }
+    };
+
+    void loadAnnouncements();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
+      const fetchedAnnouncements = await fetchAnnouncements();
       const storedIds = await AsyncStorage.getItem(ANNOUNCEMENT_SEEN_IDS_KEY);
       const previousIds = storedIds
         ? (JSON.parse(storedIds) as number[])
-        : announcements.map((item) => item.id);
+        : announcementItems.map((item) => item.id);
       const previousIdSet = new Set(previousIds);
-      const addedCount = announcements.filter((item) => !previousIdSet.has(item.id)).length;
+      const addedCount = fetchedAnnouncements.filter((item) => !previousIdSet.has(item.id)).length;
 
-      setAnnouncementItems(announcements);
+      setAnnouncementItems(fetchedAnnouncements);
+      setLoadError(false);
       await AsyncStorage.setItem(
         ANNOUNCEMENT_SEEN_IDS_KEY,
-        JSON.stringify(announcements.map((item) => item.id))
+        JSON.stringify(fetchedAnnouncements.map((item) => item.id))
       );
 
       const summary = addedCount ? `${addedCount} አዲስ ማስታወቂያ ተጨምሯል።` : 'አዲስ ማስታወቂያ አልተገኘም።';
       setDialog({
         title: 'ዝርዝሩ ታድሷል',
-        message: `${summary}\nማስታወቂያዎቹ በዚህ መሣሪያ ላይ ይገኛሉ፤ ኢንተርኔት አያስፈልግም።`,
+        message: summary,
         variant: 'success',
       });
-    } catch {
-      setAnnouncementItems(announcements);
+    } catch (error) {
+      console.error('Failed to refresh announcements', error);
+      setLoadError(announcementItems.length === 0);
       setDialog({
-        title: 'ማስታወቂያዎቹ በዚህ መሣሪያ ላይ አሉ',
-        message: 'ኢንተርኔት ሳያስፈልግ ማየት ይችላሉ፤ የአዲስ ማስታወቂያ ቁጥርን ማስቀመጥ ግን አልተቻለም።',
+        title: 'ማስታወቂያዎቹን ማደስ አልተቻለም',
+        message: 'የኢንተርኔት ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።',
         variant: 'error',
       });
     } finally {
@@ -200,9 +217,9 @@ const Announcements = () => {
             </ScrollView>
           </View>
         }
-        renderItem={({ item }: { item: MockAnnouncement }) => (
+        renderItem={({ item }: { item: Announcement }) => (
           <ScrollReveal>
-            <Link href={`/announcements/${item.slug}`} asChild>
+            <Link href={`/announcements/${item.id}`} asChild>
               <TouchableOpacity
                 activeOpacity={0.7}
                 accessibilityRole="button"
@@ -260,9 +277,11 @@ const Announcements = () => {
           <View className="mt-16 items-center">
             <Ionicons name="megaphone-outline" size={32} color="#9CA3AF" />
             <Text className="mt-3 text-[14px] text-gray-500">
-              {audienceFilter === 'ALL'
-                ? 'ምንም ማስታወቂያ የለም'
-                : `${AUDIENCE_LABELS[audienceFilter]} ማስታወቂያ የለም`}
+              {loadError
+                ? 'ማስታወቂያዎቹን መጫን አልተቻለም። ዝርዝሩን ለማደስ ወደ ታች ይጎትቱ።'
+                : audienceFilter === 'ALL'
+                  ? 'ምንም ማስታወቂያ የለም'
+                  : `${AUDIENCE_LABELS[audienceFilter]} ማስታወቂያ የለም`}
             </Text>
           </View>
         }

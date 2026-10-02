@@ -1,4 +1,4 @@
-import type { Mezmur, MezmurCategory, MezmurSummary } from './types';
+import type { Announcement, Mezmur, MezmurCategory, MezmurSummary } from './types';
 
 export const API_BASE_URL = 'https://frehaymanot-backend.vercel.app/api';
 
@@ -37,6 +37,18 @@ export async function fetchMezmurData(): Promise<{
 export async function fetchMezmurById(id: number) {
   const response = await request<{ mezmur: Mezmur }>(`/mezmur/${id}`);
   return response.mezmur;
+}
+
+export async function fetchAnnouncements(): Promise<Announcement[]> {
+  const response = await request<{ announcements: Announcement[] }>(
+    '/announcements?page=1&pageSize=100'
+  );
+  return response.announcements;
+}
+
+export async function fetchAnnouncementById(id: number): Promise<Announcement> {
+  const response = await request<{ announcement: Announcement }>(`/announcements/${id}`);
+  return response.announcement;
 }
 
 export async function sendFeedback(message: string) {
